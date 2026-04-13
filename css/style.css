@@ -60,8 +60,8 @@ nav.solid {
 }
 
 .nav-logo img {
-  height: clamp(100px, 40vw, 500px);
-  width: clamp(100px, 40vw, 500px);
+  height: clamp(250px, 65vw, 500px);
+  width: clamp(250px, 65vw, 500px);
   object-fit: contain;
   border-radius: 50%;
   display: block;
