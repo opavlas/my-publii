@@ -57,8 +57,8 @@ nav.solid {
 }
 
 .nav-logo img {
-  height: 500px;
-  width: 500px;
+  height: clamp(100px, 40vw, 500px);
+  width: clamp(100px, 40vw, 500px);
   object-fit: contain;
   border-radius: 50%;
   display: block;
@@ -511,7 +511,6 @@ footer {
   nav { padding: 0 28px; }
   .container { padding: 0 28px; }
 
-  .nav-logo img { height: 260px; width: 260px; }
 
   .products-grid { grid-template-columns: 1fr; }
   .product-detail-grid { grid-template-columns: 1fr; gap: 40px; }
@@ -525,7 +524,6 @@ footer {
   nav { padding: 0 20px; height: 60px; }
 
   .nav-logo { transform: translateY(4px); }
-  .nav-logo img { height: 120px; width: 120px; }
 
   .nav-links { gap: 20px; }
   .nav-links a { font-size: 11px; letter-spacing: 0.08em; }
