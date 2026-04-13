@@ -545,7 +545,11 @@ footer {
 
   /* Product detail */
   .product-detail { padding-bottom: 60px; }
-  .product-images .main-image { aspect-ratio: 4/3; }
+  .product-images .main-image {
+    aspect-ratio: 1/1;
+    width: 100vw;
+    margin-left: -20px;
+  }
   .specs { margin-bottom: 32px; }
 
   /* Contact */
