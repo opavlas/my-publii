@@ -18,7 +18,10 @@
   --nav-height:   76px;
 }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
 
 body {
   font-family: 'Inter', sans-serif;
@@ -547,8 +550,7 @@ footer {
   .product-detail { padding-bottom: 60px; }
   .product-images .main-image {
     aspect-ratio: 1/1;
-    width: 100vw;
-    margin-left: -20px;
+    width: 100%;
   }
   .specs { margin-bottom: 32px; }
 
