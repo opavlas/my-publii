@@ -53,8 +53,8 @@ nav.solid {
 }
 
 .nav-logo img {
-  height: 40px;
-  width: 40px;
+  height: 200px;
+  width: 200px;
   object-fit: contain;
   border-radius: 50%;
   display: block;
@@ -166,23 +166,24 @@ nav.solid {
 
 .btn-primary {
   background: var(--text);
-  color: var(--bg);
+  color: #000;
 }
 
 .btn-primary:hover {
-  background: var(--copper);
+  background: #000;
   color: #fff;
+  border: 1px solid #fff;
 }
 
 .btn-outline {
   background: transparent;
   color: var(--text);
-  border: 1px solid var(--border);
+  border: 1px solid var(--text);
 }
 
 .btn-outline:hover {
-  border-color: var(--text);
-  background: rgba(240,236,230,0.04);
+  background: var(--text);
+  color: #000;
 }
 
 /* ─── PAGE SHELL ─────────────────────────────── */
@@ -202,9 +203,9 @@ nav.solid {
 }
 
 .page-header h1 {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Bahnschrift Condensed', 'DIN Condensed', sans-serif;
   font-size: clamp(40px, 5vw, 68px);
-  font-weight: 300;
+  font-weight: 400;
 }
 
 .page-header p {
