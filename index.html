@@ -1,5 +1,62 @@
-<!DOCTYPE html><html lang="en-gb"><head><meta charset="utf-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no"><title>pahoclock</title><meta name="generator" content="Publii Open-Source CMS for Static Site"><link rel="canonical" href="https://pahoclock.com/"><link rel="alternate" type="application/atom+xml" href="https://pahoclock.com/feed.xml" title="pahoclock - RSS"><link rel="alternate" type="application/json" href="https://pahoclock.com/feed.json" title="pahoclock - JSON"><meta property="og:title" content="pahoclock"><meta property="og:site_name" content="pahoclock"><meta property="og:description" content=""><meta property="og:url" content="https://pahoclock.com/"><meta property="og:type" content="website"><link rel="stylesheet" href="https://pahoclock.com/assets/css/fontawesome-all.min.css?v=85514f933f9e0b82460af63f1a403fa5"><link rel="stylesheet" href="https://pahoclock.com/assets/css/style.css?v=6d92336350d5374cc2b2fb5720b76be5"><noscript><link rel="stylesheet" href="https://pahoclock.com/assets/css/noscript.css?v=efa867a99f5064d6729e4dc2008ad50b"></noscript><script type="application/ld+json">{"@context":"http://schema.org","@type":"Organization","name":"pahoclock","url":"https://pahoclock.com/"}</script><style>#wrapper > .bg {
-               background-image: url(https://pahoclock.com/assets/images/overlay.png), linear-gradient(0deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.1)), url(https://pahoclock.com/media/website/pahoclock3.jpg);
-           }</style><noscript><style>img[loading] {
-                    opacity: 1;
-                }</style></noscript></head><body class="is-preload home-template"><div id="wrapper" class="fade-in"><div id="intro"><h1>PAHOCLOCK</h1><p>webpage in progress..</p><ul class="actions"><li><a href="#header" class="button icon solid solo fa-arrow-down scrolly">Continue</a></li></ul></div><header id="header"><a class="logo" href="https://pahoclock.com/">pahoclock</a></header><main id="main"><section class="posts"></section></main><footer id="copyright"><ul><li>© pahoclock</li></ul></footer></div><script src="https://pahoclock.com/assets/js/jquery.min.js?v=c9771cc3e90e18f5336eedbd0fffb2cf"></script><script src="https://pahoclock.com/assets/js/jquery.scrollex.min.js?v=f89065e3d988006af9791b44561d7c90"></script><script src="https://pahoclock.com/assets/js/jquery.scrolly.min.js?v=1ed5a78bde1476875a40f6b9ff44fc14"></script><script src="https://pahoclock.com/assets/js/browser.min.js?v=c07298dd19048a8a69ad97e754dfe8d0"></script><script src="https://pahoclock.com/assets/js/breakpoints.min.js?v=81a479eb099e3b187613943b085923b8"></script><script src="https://pahoclock.com/assets/js/util.min.js?v=4201a626f8c9b614a663b3a1d7d82615"></script><script src="https://pahoclock.com/assets/js/main.min.js?v=56233c354bd814758be8bff42f7e13a5"></script><script>/*<![CDATA[*/var images=document.querySelectorAll("img[loading]");for(var i=0;i<images.length;i++){if(images[i].complete){images[i].classList.add("is-loaded")}else{images[i].addEventListener("load",function(){this.classList.add("is-loaded")},false)}};/*]]>*/</script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>pahoclock</title>
+  <link rel="canonical" href="https://pahoclock.com/">
+  <meta property="og:title" content="pahoclock">
+  <meta property="og:site_name" content="pahoclock">
+  <meta property="og:url" content="https://pahoclock.com/">
+  <meta property="og:type" content="website">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <nav class="transparent" id="main-nav">
+    <a href="index.html" class="nav-logo">
+      <img src="images/logo_circle.png" alt="pahoclock">
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active">Home</a></li>
+      <li><a href="products.html">Products</a></li>
+      <li><a href="contact.html">Contact</a></li>
+    </ul>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-bg" style="background-image: url('images/pahoclock_dark_main.jpg');"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow">Handcrafted timepieces</p>
+      <h1>pahoclock</h1>
+      <p class="hero-tagline">Time, shaped from steel and fire.</p>
+      <a href="products.html" class="btn btn-primary">See Products</a>
+    </div>
+    <span class="hero-scroll">Scroll</span>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <span class="footer-logo"><img src="images/logo_circle.png" alt="pahoclock"></span>
+        <span>&copy; 2026 pahoclock</span>
+        <a href="contact.html" style="color: inherit; text-decoration: none;">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const nav = document.getElementById('main-nav');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 40) {
+        nav.classList.remove('transparent');
+        nav.classList.add('solid');
+      } else {
+        nav.classList.remove('solid');
+        nav.classList.add('transparent');
+      }
+    });
+  </script>
+
+</body>
+</html>
