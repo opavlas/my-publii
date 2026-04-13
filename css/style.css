@@ -529,10 +529,10 @@ footer {
   .nav-logo { transform: none; flex-shrink: 0; }
 
   .nav-logo img {
-    height: 36px;
-    width: 36px;
-    max-height: 36px;
-    max-width: 36px;
+    height: 144px;
+    width: 144px;
+    max-height: 144px;
+    max-width: 144px;
   }
 
   .nav-links { gap: 14px; margin-left: auto; }
