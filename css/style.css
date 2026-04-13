@@ -526,7 +526,12 @@ footer {
 
   nav { padding: 0 20px; height: 60px; }
 
-  .nav-logo { transform: translateY(4px); }
+  .nav-logo { transform: none; }
+
+  .nav-logo img {
+    height: 40px;
+    width: 40px;
+  }
 
   .nav-links { gap: 20px; }
   .nav-links a { font-size: 11px; letter-spacing: 0.08em; }
