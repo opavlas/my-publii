@@ -524,17 +524,19 @@ footer {
 @media (max-width: 600px) {
   :root { --nav-height: 60px; }
 
-  nav { padding: 0 20px; height: 60px; }
+  nav { padding: 0 16px; height: 60px; overflow: hidden; justify-content: flex-start; }
 
-  .nav-logo { transform: none; }
+  .nav-logo { transform: none; flex-shrink: 0; }
 
   .nav-logo img {
-    height: 40px;
-    width: 40px;
+    height: 36px;
+    width: 36px;
+    max-height: 36px;
+    max-width: 36px;
   }
 
-  .nav-links { gap: 20px; }
-  .nav-links a { font-size: 11px; letter-spacing: 0.08em; }
+  .nav-links { gap: 14px; margin-left: auto; }
+  .nav-links a { font-size: 10px; letter-spacing: 0.04em; }
 
   .container { padding: 0 20px; }
 
