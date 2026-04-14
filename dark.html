@@ -1,28 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>pahoclock — Dark</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body data-page="dark">
 
   <nav class="solid" id="main-nav">
     <a href="index.html" class="nav-logo">
       <img src="images/logo_circle.png" alt="pahoclock">
     </a>
     <ul class="nav-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="products.html" class="active">Products</a></li>
-      <li><a href="contact.html">Contact</a></li>
+      <li><a href="index.html" data-i18n="nav.home">Domů</a></li>
+      <li><a href="products.html" class="active" data-i18n="nav.products">Produkty</a></li>
+      <li><a href="contact.html" data-i18n="nav.contact">Kontakt</a></li>
     </ul>
+    <button class="lang-toggle" id="lang-toggle" onclick="toggleLang()">EN</button>
   </nav>
 
   <main class="page">
     <div class="container">
       <div class="page-header">
-        <p><a href="products.html" style="color: inherit; text-decoration: none; transition: color 0.2s;">&larr; All Products</a></p>
+        <p><a href="products.html" style="color: inherit; text-decoration: none; transition: color 0.2s;" data-i18n="product.back">← Všechny produkty</a></p>
         <h1>pahoclock &mdash; Dark</h1>
       </div>
 
@@ -38,38 +39,33 @@
             <h1>Dark</h1>
             <div class="product-price">20 000 Kč</div>
 
-            <p class="product-description">
-              <!-- Description placeholder -->
-              A bold presence in matte black steel. The Dark variant is defined by its deep,
-              uncompromising finish — a clock that disappears into shadow and commands attention
-              in equal measure.
-            </p>
+            <p class="product-description" data-i18n="dark.desc">Ručně vyráběné nástěnné slovní hodiny, které jedinečným způsobem zobrazují čas slovy v češtině nebo angličtině. Každý kus je originál, pečlivě vytvořený s důrazem na detail. Hodiny nejen přesně měří čas, ale zároveň se stávají výrazným designovým prvkem interiéru. Ideální pro ty, kteří hledají spojení funkčnosti, originality a moderního stylu.</p>
 
             <div class="specs">
-              <p class="specs-title">Specifications</p>
+              <p class="specs-title" data-i18n="product.specs">Specifikace</p>
               <div class="spec-row">
-                <span class="spec-label">Material</span>
-                <span class="spec-value">&mdash;</span>
+                <span class="spec-label" data-i18n="spec.material">Materiál</span>
+                <span class="spec-value" data-i18n="dark.material">Sklo</span>
               </div>
               <div class="spec-row">
-                <span class="spec-label">Dimensions</span>
-                <span class="spec-value">&mdash;</span>
+                <span class="spec-label" data-i18n="spec.dimensions">Rozměry</span>
+                <span class="spec-value" data-i18n="spec.dimensions.value">47,5 × 47,5 cm</span>
               </div>
               <div class="spec-row">
-                <span class="spec-label">Weight</span>
-                <span class="spec-value">&mdash;</span>
+                <span class="spec-label" data-i18n="spec.weight">Hmotnost</span>
+                <span class="spec-value" data-i18n="dark.weight">5 kg</span>
               </div>
               <div class="spec-row">
-                <span class="spec-label">Finish</span>
-                <span class="spec-value">&mdash;</span>
+                <span class="spec-label" data-i18n="spec.finish">Povrch</span>
+                <span class="spec-value" data-i18n="dark.finish">Lesklé sklo</span>
               </div>
               <div class="spec-row">
-                <span class="spec-label">Movement</span>
-                <span class="spec-value">&mdash;</span>
+                <span class="spec-label" data-i18n="spec.power">Spotřeba</span>
+                <span class="spec-value" data-i18n="spec.power.value">5 W</span>
               </div>
             </div>
 
-            <a href="contact.html" class="btn btn-primary" style="width: 100%; text-align: center;">Order Now</a>
+            <a href="contact.html" class="btn btn-primary" style="width: 100%; text-align: center;" data-i18n="product.order">Objednat</a>
           </div>
 
         </div>
@@ -83,7 +79,7 @@
         <span class="footer-logo"><img src="images/logo_circle.png" alt="pahoclock"></span>
         <span>&copy; 2026 pahoclock</span>
         <div class="footer-right">
-          <a href="contact.html" style="color: inherit; text-decoration: none;">Contact</a>
+          <a href="contact.html" style="color: inherit; text-decoration: none;" data-i18n="footer.contact">Kontakt</a>
           <a href="https://www.instagram.com/paho_clock" target="_blank" rel="noopener" class="footer-ig" aria-label="Instagram">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
           </a>
@@ -91,6 +87,8 @@
       </div>
     </div>
   </footer>
+
+  <script src="js/lang.js"></script>
 
 </body>
 </html>

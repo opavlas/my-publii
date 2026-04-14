@@ -1,49 +1,48 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="cs">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Contact — pahoclock</title>
+  <title>Kontakt — pahoclock</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
-<body>
+<body data-page="contact">
 
   <nav class="solid" id="main-nav">
     <a href="index.html" class="nav-logo">
       <img src="images/logo_circle.png" alt="pahoclock">
     </a>
     <ul class="nav-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="products.html">Products</a></li>
-      <li><a href="contact.html" class="active">Contact</a></li>
+      <li><a href="index.html" data-i18n="nav.home">Domů</a></li>
+      <li><a href="products.html" data-i18n="nav.products">Produkty</a></li>
+      <li><a href="contact.html" class="active" data-i18n="nav.contact">Kontakt</a></li>
     </ul>
+    <button class="lang-toggle" id="lang-toggle" onclick="toggleLang()">EN</button>
   </nav>
 
   <main class="page">
     <div class="container">
       <div class="page-header">
-        <h1>Contact</h1>
-        <p>Get in touch &mdash; we'd love to hear from you</p>
+        <h1 data-i18n="contact.title">Kontakt</h1>
+        <p data-i18n="contact.subtitle">Kontaktujte nás</p>
       </div>
 
       <div class="contact-grid">
 
         <div class="contact-info">
-          <h2>Let's talk about<br>your clock.</h2>
-          <p>
-            Interested in ordering, have a question about a product,
-            or want to discuss a custom piece? Reach out — we'll get back
-            to you as soon as possible.
+          <h2 data-i18n="contact.heading">Prosím kontaktujte nás.</h2>
+          <p data-i18n="contact.text">
+            Každou objednávku řešíme individuálně s každým zákazníkem.
           </p>
         </div>
 
         <div class="contact-details">
           <div class="spec-row">
-            <span class="spec-label">Email</span>
+            <span class="spec-label" data-i18n="contact.email.label">E-mail</span>
             <span class="spec-value"><a href="mailto:opavlas@icloud.com" style="color: inherit; text-decoration: none;">opavlas@icloud.com</a></span>
           </div>
           <div class="spec-row">
-            <span class="spec-label">Phone</span>
+            <span class="spec-label" data-i18n="contact.phone.label">Telefon</span>
             <span class="spec-value"><a href="tel:+420737640746" style="color: inherit; text-decoration: none;">+420 737 640 746</a></span>
           </div>
           <div class="spec-row">
@@ -62,7 +61,7 @@
         <span class="footer-logo"><img src="images/logo_circle.png" alt="pahoclock"></span>
         <span>&copy; 2026 pahoclock</span>
         <div class="footer-right">
-          <a href="contact.html" style="color: inherit; text-decoration: none;">Contact</a>
+          <a href="contact.html" style="color: inherit; text-decoration: none;" data-i18n="footer.contact">Kontakt</a>
           <a href="https://www.instagram.com/paho_clock" target="_blank" rel="noopener" class="footer-ig" aria-label="Instagram">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
           </a>
@@ -70,6 +69,8 @@
       </div>
     </div>
   </footer>
+
+  <script src="js/lang.js"></script>
 
 </body>
 </html>

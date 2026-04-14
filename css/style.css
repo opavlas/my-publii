@@ -86,6 +86,25 @@ nav.solid {
 .nav-links a:hover,
 .nav-links a.active { color: var(--text); }
 
+.lang-toggle {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 400;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+.lang-toggle:hover {
+  color: var(--text);
+  border-color: var(--text-secondary);
+}
+
 /* ─── HERO ───────────────────────────────────── */
 
 .hero {
@@ -529,10 +548,10 @@ footer {
   .nav-logo { transform: none; flex-shrink: 0; }
 
   .nav-logo img {
-    height: 144px;
-    width: 144px;
-    max-height: 144px;
-    max-width: 144px;
+    height: 432px;
+    width: 432px;
+    max-height: 432px;
+    max-width: 432px;
   }
 
   .nav-links { gap: 14px; margin-left: auto; }
@@ -556,7 +575,7 @@ footer {
   /* Product detail */
   .product-detail { padding-bottom: 60px; }
   .product-images .main-image {
-    aspect-ratio: 1/1;
+    aspect-ratio: 3/4;
     width: 100%;
   }
   .specs { margin-bottom: 32px; }
