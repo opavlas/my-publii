@@ -27,7 +27,7 @@
       'dark.desc':     'Ručně vyráběné nástěnné slovní hodiny, které jedinečným způsobem zobrazují čas slovy v češtině nebo angličtině. Každý kus je originál, pečlivě vytvořený s důrazem na detail. Hodiny nejen přesně měří čas, ale zároveň se stávají výrazným designovým prvkem interiéru. Ideální pro ty, kteří hledají spojení funkčnosti, originality a moderního stylu.',
       'dark.material': 'Sklo',
       'dark.weight':   '5 kg',
-      'dark.finish':   'Lesklé sklo',
+      'dark.finish':   'Černé lesklé sklo',
 
       'corten.desc':     'Ručně vyráběné nástěnné slovní hodiny, které jedinečným způsobem zobrazují čas slovy v češtině nebo angličtině. Každý kus je originál, pečlivě vytvořený s důrazem na detail. Hodiny nejen přesně měří čas, ale zároveň se stávají výrazným designovým prvkem interiéru. Ideální pro ty, kteří hledají spojení funkčnosti, originality a moderního stylu.',
       'corten.material': 'Cortenová ocel',
@@ -68,7 +68,7 @@
       'dark.desc':     'Handcrafted wall word clocks that uniquely display time in words in Czech or English. Each piece is an original, carefully crafted with attention to detail. The clocks not only accurately measure time but also become a distinctive design element of any interior. Ideal for those seeking a combination of functionality, originality, and modern style.',
       'dark.material': 'Glass',
       'dark.weight':   '5 kg',
-      'dark.finish':   'Shiny Glass',
+      'dark.finish':   'Black Shiny Glass',
 
       'corten.desc':     'Handcrafted wall word clocks that uniquely display time in words in Czech or English. Each piece is an original, carefully crafted with attention to detail. The clocks not only accurately measure time but also become a distinctive design element of any interior. Ideal for those seeking a combination of functionality, originality, and modern style.',
       'corten.material': 'Corten Steel',

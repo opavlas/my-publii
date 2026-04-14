@@ -543,9 +543,9 @@ footer {
 @media (max-width: 600px) {
   :root { --nav-height: 60px; }
 
-  nav { padding: 0 16px; height: 60px; overflow: hidden; justify-content: flex-start; }
+  nav { padding: 0 16px; height: 60px; justify-content: flex-start; }
 
-  .nav-logo { transform: none; flex-shrink: 0; }
+  .nav-logo { flex-shrink: 0; }
 
   .nav-logo img {
     height: 432px;
