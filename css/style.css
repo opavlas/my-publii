@@ -764,14 +764,21 @@ footer {
   nav { padding: 0 28px; }
   .container { padding: 0 28px; }
 
-
   .products-grid { grid-template-columns: 1fr; }
   .product-detail-grid { grid-template-columns: 1fr; gap: 40px; }
   .product-info { position: static; }
   .contact-grid { grid-template-columns: 1fr; gap: 40px; }
-  .product-body-grid { grid-template-columns: 1fr; gap: 40px; }
-  .product-body-info { position: static; }
   .product-hero-content { padding: 0 28px 56px; }
+}
+
+@media (max-width: 768px) {
+  .product-body-grid {
+    display: flex !important;
+    flex-direction: column;
+    gap: 32px;
+  }
+  .product-body-info { position: static !important; }
+  .product-body-photo { width: 100%; aspect-ratio: 1/1; }
 }
 
 @media (max-width: 600px) {
