@@ -11,6 +11,7 @@
       'hero.scroll':           'Posunout',
 
       'products.heading':      'Hodiny',
+      'products.subheading':   'Ručně vyráběné — každý kus originál',
       'products.view':         'Zobrazit produkt →',
 
       'product.back':          '← Všechny produkty',
@@ -51,7 +52,8 @@
       'hero.btn':              'See Products',
       'hero.scroll':           'Scroll',
 
-      'products.heading':      'Clock',
+      'products.heading':      'Clocks',
+      'products.subheading':   'Handcrafted — every piece an original',
       'products.view':         'View product →',
 
       'product.back':          '← All Products',

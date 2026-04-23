@@ -78,10 +78,27 @@ nav.solid {
   letter-spacing: 0.14em;
   text-transform: uppercase;
   transition: color 0.2s;
+  position: relative;
+}
+
+.nav-links a::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -3px;
+  width: 0;
+  height: 1px;
+  background: var(--text);
+  transition: width 0.3s ease;
 }
 
 .nav-links a:hover,
 .nav-links a.active { color: var(--text); }
+
+@media (hover: hover) and (pointer: fine) {
+  .nav-links a:hover::after,
+  .nav-links a.active::after { width: 100%; }
+}
 
 .lang-toggle {
   background: none;
@@ -152,6 +169,14 @@ nav.solid {
   margin-bottom: 28px;
 }
 
+.hero-content {
+  transition: transform 0.5s ease;
+}
+
+.hero-content:has(.btn:hover) {
+  transform: scale(1.1);
+}
+
 .hero-tagline {
   font-size: 14px;
   color: var(--text-secondary);
@@ -175,7 +200,9 @@ nav.solid {
 /* ─── BUTTONS ────────────────────────────────── */
 
 .btn {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
   padding: 15px 44px;
   font-family: 'Inter', sans-serif;
   font-size: 11px;
@@ -185,24 +212,49 @@ nav.solid {
   text-decoration: none;
   cursor: pointer;
   border: none;
-  transition: background 0.25s, color 0.25s, border-color 0.25s;
+  position: relative;
+  overflow: hidden;
+  transition: letter-spacing 0.35s ease, color 0.25s, background 0.25s;
+}
+
+/* Arrow that slides in from left on hover */
+.btn::before {
+  content: '→';
+  position: absolute;
+  left: -24px;
+  opacity: 0;
+  font-size: 13px;
+  letter-spacing: 0;
+  transition: left 0.35s ease, opacity 0.25s ease;
+}
+
+.btn:hover::before {
+  left: 20px;
+  opacity: 1;
+}
+
+.btn:hover {
+  letter-spacing: 0.26em;
+  padding-left: 52px;
 }
 
 .btn-primary {
   background: var(--text);
   color: #000;
+  transition: background 0.3s ease, color 0.3s ease, letter-spacing 0.35s ease, padding-left 0.35s ease;
 }
 
 .btn-primary:hover {
-  background: #000;
-  color: #fff;
-  border: 1px solid #fff;
+  background: transparent;
+  color: var(--text);
+  outline: 1px solid var(--text);
 }
 
 .btn-outline {
   background: transparent;
   color: var(--text);
   border: 1px solid var(--text);
+  transition: background 0.3s ease, color 0.3s ease, letter-spacing 0.35s ease, padding-left 0.35s ease;
 }
 
 .btn-outline:hover {
@@ -242,17 +294,39 @@ nav.solid {
 
 /* ─── PRODUCTS GRID ──────────────────────────── */
 
+.products-page-header {
+  padding: 72px 56px 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.products-page-header h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(52px, 7vw, 100px);
+  font-weight: 300;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+.products-page-header p {
+  font-size: 12px;
+  color: var(--text-muted);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin-top: 20px;
+}
+
 .products-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 3px;
-  margin-bottom: 120px;
+  gap: 2px;
 }
 
 .product-card {
   position: relative;
   overflow: hidden;
-  aspect-ratio: 3/4;
+  height: 60vh;
+  min-height: 400px;
   background: var(--bg-card);
   display: block;
   text-decoration: none;
@@ -261,75 +335,183 @@ nav.solid {
 .product-card img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
-  filter: brightness(0.65);
-  transition: transform 0.7s ease, filter 0.5s ease;
+  object-fit: contain;
+  filter: brightness(0.9);
+  transform: scale(0.78);
+  transition: transform 0.9s ease, filter 0.5s ease;
   display: block;
 }
 
 .product-card:hover img {
-  transform: scale(1.05);
-  filter: brightness(0.45);
+  transform: scale(1.0);
+  filter: brightness(0.75);
 }
 
 .product-card-info {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  padding: 64px 44px 44px;
-  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
-  transition: transform 0.35s ease;
-  transform: translateY(8px);
+  padding: 80px 52px 52px;
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, transparent 100%);
+  transition: transform 0.4s ease;
+  transform: translateY(6px);
 }
 
 .product-card:hover .product-card-info { transform: translateY(0); }
 
+.product-card-info .product-tag {
+  font-size: 10px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 12px;
+}
+
 .product-card-info h2 {
   font-family: 'Cormorant Garamond', serif;
-  font-size: 38px;
+  font-size: clamp(42px, 4vw, 64px);
   font-weight: 300;
-  margin-bottom: 6px;
+  line-height: 1;
+  margin-bottom: 16px;
   color: var(--text);
 }
 
 .product-card-info .price {
   font-size: 13px;
   color: var(--text-secondary);
-  letter-spacing: 0.06em;
-  margin-bottom: 20px;
+  letter-spacing: 0.08em;
+  margin-bottom: 28px;
 }
 
 .product-card-info .link-label {
   font-size: 11px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--text-muted);
   transition: color 0.2s;
+  opacity: 0;
+  transform: translateY(6px);
+  transition: opacity 0.3s ease, transform 0.3s ease, color 0.2s;
 }
 
-.product-card:hover .link-label { color: var(--text); }
+.product-card:hover .link-label {
+  opacity: 1;
+  transform: translateY(0);
+  color: var(--text);
+}
 
-/* ─── PRODUCT DETAIL ─────────────────────────── */
+/* ─── PRODUCT HERO ───────────────────────────── */
 
-.product-detail { padding-bottom: 120px; }
+.product-hero {
+  position: relative;
+  height: 100vh;
+  min-height: 600px;
+  display: flex;
+  align-items: flex-end;
+  overflow: hidden;
+}
 
-.product-detail-grid {
+.product-hero-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.45);
+  transition: transform 9s ease, filter 0.6s ease;
+  will-change: transform;
+}
+
+.product-hero:hover .product-hero-img {
+  transform: scale(1.04);
+  filter: brightness(0.38);
+}
+
+.product-hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(12,12,12,1) 0%,
+    rgba(12,12,12,0.45) 45%,
+    transparent 100%
+  );
+}
+
+.product-hero-content {
+  position: relative;
+  width: 100%;
+  padding: 0 56px 72px;
+}
+
+.product-hero-content .product-tag {
+  font-size: 11px;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
+.product-hero-content h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(72px, 10vw, 140px);
+  font-weight: 300;
+  line-height: 0.92;
+  color: var(--text);
+  margin-bottom: 32px;
+  letter-spacing: -0.01em;
+}
+
+.product-hero-content .product-price {
+  font-size: 16px;
+  font-weight: 300;
+  letter-spacing: 0.1em;
+  color: var(--text-secondary);
+}
+
+/* ─── PRODUCT BODY ───────────────────────────── */
+
+.product-body {
+  padding: 96px 0 120px;
+}
+
+.product-body-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 80px;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 72px;
   align-items: start;
 }
 
-.product-images .main-image {
+.product-body-photo {
   width: 100%;
   aspect-ratio: 3/4;
   object-fit: cover;
   display: block;
 }
 
-.product-info {
+.product-body-info {
   position: sticky;
   top: calc(var(--nav-height) + 40px);
 }
+
+.product-body-photo {
+  width: 100%;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  display: block;
+}
+
+.product-back {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color 0.2s;
+  display: inline-block;
+  margin-bottom: 40px;
+}
+
+.product-back:hover { color: var(--text); }
 
 .product-tag {
   font-size: 11px;
@@ -339,29 +521,11 @@ nav.solid {
   margin-bottom: 18px;
 }
 
-.product-info h1 {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: clamp(36px, 4vw, 58px);
-  font-weight: 300;
-  line-height: 1.08;
-  margin-bottom: 28px;
-}
-
-.product-price {
-  font-size: 22px;
-  font-weight: 300;
-  letter-spacing: 0.04em;
-  color: var(--text);
-  padding-bottom: 36px;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 36px;
-}
-
 .product-description {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text-secondary);
-  line-height: 1.85;
-  margin-bottom: 40px;
+  line-height: 1.9;
+  margin-bottom: 0;
 }
 
 /* ─── SPECS ──────────────────────────────────── */
@@ -387,6 +551,63 @@ nav.solid {
 
 .spec-label { color: var(--text-muted); }
 .spec-value { color: var(--text); text-align: right; }
+
+/* ─── FADE-IN ANIMATION ──────────────────────── */
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.fade-up         { animation: fadeUp 0.9s ease both; }
+.fade-up-delay   { animation: fadeUp 0.9s 0.15s ease both; }
+.fade-up-delay-2 { animation: fadeUp 0.9s 0.3s  ease both; }
+
+/* ─── CORTEN ACCENT ──────────────────────────── */
+
+[data-page="corten"] .product-hero-content h1 { color: #d4956a; }
+[data-page="corten"] .specs-title             { color: var(--copper); }
+
+/* ─── PRODUCT DETAIL (legacy, kept for compatibility) ── */
+
+.product-detail { padding-bottom: 120px; }
+
+.product-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+  align-items: start;
+}
+
+.product-images .main-image {
+  width: 100%;
+  aspect-ratio: 3/4;
+  object-fit: cover;
+  display: block;
+}
+
+.product-info {
+  position: sticky;
+  top: calc(var(--nav-height) + 40px);
+}
+
+.product-info h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(36px, 4vw, 58px);
+  font-weight: 300;
+  line-height: 1.08;
+  margin-bottom: 28px;
+}
+
+.product-price {
+  font-size: 22px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  padding-bottom: 36px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 36px;
+}
 
 /* ─── CONTACT ────────────────────────────────── */
 
@@ -536,6 +757,8 @@ footer {
   .product-detail-grid { grid-template-columns: 1fr; gap: 40px; }
   .product-info { position: static; }
   .contact-grid { grid-template-columns: 1fr; gap: 40px; }
+  .product-body-grid { grid-template-columns: 1fr 1fr; gap: 40px; }
+  .product-hero-content { padding: 0 28px 56px; }
 }
 
 @media (max-width: 600px) {
@@ -565,10 +788,9 @@ footer {
 
   /* Product detail */
   .product-detail { padding-bottom: 60px; }
-  .product-images .main-image {
-    aspect-ratio: 3/4;
-    width: 100%;
-  }
+  .product-images .main-image { aspect-ratio: 3/4; width: 100%; }
+  .product-body { padding: 60px 0 80px; }
+  .product-hero-content { padding: 0 20px 48px; }
   .specs { margin-bottom: 32px; }
 
   /* Contact */
