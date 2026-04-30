@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>3D Disassembly</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow-x: hidden;
+      background: #111;
+    }
+    #sticky-wrap {
+      position: relative;
+      width: 100%;
+      height: 500vh;
+      background: #111;
+    }
+    #canvas-container {
+      position: sticky;
+      top: 0;
+      width: 100%;
+      height: 100vh;
+      overflow: hidden;
+    }
+    canvas {
+      display: block;
+      width: 100% !important;
+      height: 100% !important;
+    }
+  </style>
+  <script type="module" crossorigin src="/assets/index-CLMxoiO2.js"></script>
+</head>
+<body>
+  <div id="sticky-wrap">
+    <div id="canvas-container">
+      <canvas id="canvas"></canvas>
+    </div>
+  </div>
+</body>
+</html>
