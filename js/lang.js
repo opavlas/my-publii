@@ -3,6 +3,7 @@
     cs: {
       'nav.home':              'Domů',
       'nav.products':          'Produkty',
+      'nav.function':          'Funkce',
       'nav.contact':           'Kontakt',
       'footer.contact':        'Kontakt',
 
@@ -13,6 +14,10 @@
       'products.heading':      'Hodiny',
       'products.subheading':   'Ručně vyráběné — každý kus originál',
       'products.view':         'Zobrazit produkt →',
+
+      'function.heading':      'Funkce',
+      'function.subheading':   'Jak hodiny zobrazují čas',
+      'function.desc':         'Hodiny pahoclock zobrazují čas slovy v pětiminutových intervalech. Vyzkoušejte si níže, jak hodiny vypadají v různých časech.',
 
       'product.back':          '← Všechny produkty',
       'product.specs':         'Specifikace',
@@ -45,6 +50,7 @@
     en: {
       'nav.home':              'Home',
       'nav.products':          'Products',
+      'nav.function':          'Function',
       'nav.contact':           'Contact',
       'footer.contact':        'Contact',
 
@@ -55,6 +61,10 @@
       'products.heading':      'Clocks',
       'products.subheading':   'Handcrafted — every piece an original',
       'products.view':         'View product →',
+
+      'function.heading':      'Function',
+      'function.subheading':   'How the clock tells time',
+      'function.desc':         'The pahoclock displays time in words at five-minute intervals. Try the interactive demo below to see how the clock looks at different times.',
 
       'product.back':          '← All Products',
       'product.specs':         'Specifications',
@@ -90,6 +100,7 @@
     cs: {
       index:    'pahoclock',
       products: 'Produkty — pahoclock',
+      function: 'Funkce — pahoclock',
       dark:     'pahoclock — Dark',
       corten:   'pahoclock — Corten',
       contact:  'Kontakt — pahoclock',
@@ -97,6 +108,7 @@
     en: {
       index:    'pahoclock',
       products: 'Products — pahoclock',
+      function: 'Function — pahoclock',
       dark:     'pahoclock — Dark',
       corten:   'pahoclock — Corten',
       contact:  'Contact — pahoclock',

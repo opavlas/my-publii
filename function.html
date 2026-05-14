@@ -3,10 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Produkty — pahoclock</title>
+  <title>FUNKCE — pahoclock</title>
   <link rel="stylesheet" href="css/style.css">
+  <style>
+    .function-intro {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 56px 40px;
+    }
+    .function-intro p {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      max-width: 60ch;
+    }
+    .function-frame-wrap {
+      width: 100%;
+      height: calc(100vh - var(--nav-height));
+      background: #faf9f5;
+    }
+    .function-frame-wrap iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+    @media (max-width: 900px) {
+      .function-intro { padding: 16px 28px 24px; }
+      .function-frame-wrap { height: 80vh; }
+    }
+    @media (max-width: 600px) {
+      .function-intro { padding: 12px 20px 20px; }
+      .function-intro p { font-size: 15px; }
+      .function-frame-wrap { height: 70vh; min-height: 420px; }
+    }
+  </style>
 </head>
-<body data-page="products">
+<body data-page="function">
 
   <nav class="solid" id="main-nav">
     <a href="index.html" class="nav-logo">
@@ -14,8 +47,8 @@
     </a>
     <ul class="nav-links">
       <li><a href="index.html" data-i18n="nav.home">Domů</a></li>
-      <li><a href="products.html" class="active" data-i18n="nav.products">Produkty</a></li>
-      <li><a href="function.html" data-i18n="nav.function">Funkce</a></li>
+      <li><a href="products.html" data-i18n="nav.products">Produkty</a></li>
+      <li><a href="function.html" class="active" data-i18n="nav.function">Funkce</a></li>
       <li><a href="contact.html" data-i18n="nav.contact">Kontakt</a></li>
     </ul>
     <button class="lang-toggle" id="lang-toggle" onclick="toggleLang()">EN</button>
@@ -24,32 +57,16 @@
   <main style="padding-top: var(--nav-height);">
 
     <div class="products-page-header fade-up">
-      <h1 data-i18n="products.heading">Hodiny</h1>
-      <p data-i18n="products.subheading">Ručně vyráběné — každý kus originál</p>
+      <h1 data-i18n="function.heading">Funkce</h1>
+      <p data-i18n="function.subheading">Jak hodiny zobrazují čas</p>
     </div>
 
-    <div class="products-grid">
+    <div class="function-intro fade-up">
+      <p data-i18n="function.desc">Hodiny pahoclock zobrazují čas slovy v pětiminutových intervalech. Vyzkoušejte si níže, jak hodiny vypadají v různých časech.</p>
+    </div>
 
-      <a href="dark.html" class="product-card">
-        <img src="images/pahoclock_dark_main.jpg" alt="pahoclock — Dark">
-        <div class="product-card-info">
-          <p class="product-tag">pahoclock</p>
-          <h2>Dark</h2>
-          <p class="price">20 000 Kč</p>
-          <span class="link-label" data-i18n="products.view">Zobrazit produkt →</span>
-        </div>
-      </a>
-
-      <a href="corten.html" class="product-card">
-        <img src="images/pahoclock_main.JPEG" alt="pahoclock — Corten">
-        <div class="product-card-info">
-          <p class="product-tag">pahoclock</p>
-          <h2>Corten</h2>
-          <p class="price">20 000 Kč</p>
-          <span class="link-label" data-i18n="products.view">Zobrazit produkt →</span>
-        </div>
-      </a>
-
+    <div class="function-frame-wrap">
+      <iframe src="function/czech-word-clock.html" title="Czech Word Clock" loading="lazy"></iframe>
     </div>
 
   </main>
