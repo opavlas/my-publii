@@ -98,20 +98,20 @@
 
   var PAGE_TITLES = {
     cs: {
-      index:    'pahoclock',
-      products: 'Produkty — pahoclock',
-      function: 'Funkce — pahoclock',
-      dark:     'pahoclock — Dark',
-      corten:   'pahoclock — Corten',
-      contact:  'Kontakt — pahoclock',
+      index:    'pahoclock — ručně vyráběné nástěnné slovní hodiny',
+      products: 'Produkty — slovní hodiny Corten a Dark | pahoclock',
+      function: 'Funkce — jak slovní hodiny zobrazují čas | pahoclock',
+      dark:     'pahoclock Dark — slovní hodiny z černého skla',
+      corten:   'pahoclock Corten — slovní hodiny z cortenové oceli',
+      contact:  'Kontakt — objednávka slovních hodin | pahoclock',
     },
     en: {
-      index:    'pahoclock',
-      products: 'Products — pahoclock',
-      function: 'Function — pahoclock',
-      dark:     'pahoclock — Dark',
-      corten:   'pahoclock — Corten',
-      contact:  'Contact — pahoclock',
+      index:    'pahoclock — handcrafted wall word clocks',
+      products: 'Products — Corten and Dark word clocks | pahoclock',
+      function: 'Function — how the word clock tells time | pahoclock',
+      dark:     'pahoclock Dark — word clock in black glass',
+      corten:   'pahoclock Corten — word clock in corten steel',
+      contact:  'Contact — order a word clock | pahoclock',
     }
   };
 

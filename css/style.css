@@ -120,6 +120,12 @@ nav.solid {
   border-color: var(--text-secondary);
 }
 
+a.lang-toggle {
+  text-decoration: none;
+  display: inline-block;
+  line-height: normal;
+}
+
 /* ─── HERO ───────────────────────────────────── */
 
 .hero {

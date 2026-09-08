@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>pahoclock — handcrafted wall word clocks</title>
+  <meta name="description" content="Handcrafted wall word clocks that tell the time in words, in English or Czech. Corten steel or black glass, 47.5 × 47.5 cm. Every piece an original.">
+  <link rel="canonical" href="https://pahoclock.com/en/">
+  <link rel="alternate" hreflang="cs" href="https://pahoclock.com/">
+  <link rel="alternate" hreflang="en" href="https://pahoclock.com/en/">
+  <link rel="alternate" hreflang="x-default" href="https://pahoclock.com/">
+  <link rel="icon" href="../images/logo_circle_crop.png">
+  <link rel="apple-touch-icon" href="../images/logo_circle_crop.png">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="pahoclock">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="cs_CZ">
+  <meta property="og:title" content="pahoclock — handcrafted wall word clocks">
+  <meta property="og:description" content="Handcrafted wall word clocks that tell the time in words, in English or Czech. Corten steel or black glass, 47.5 × 47.5 cm. Every piece an original.">
+  <meta property="og:url" content="https://pahoclock.com/en/">
+  <meta property="og:image" content="https://pahoclock.com/images/pahoclock_dark_main.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="pahoclock — handcrafted wall word clocks">
+  <meta name="twitter:description" content="Handcrafted wall word clocks that tell the time in words, in English or Czech. Corten steel or black glass, 47.5 × 47.5 cm. Every piece an original.">
+  <meta name="twitter:image" content="https://pahoclock.com/images/pahoclock_dark_main.jpg">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://pahoclock.com/#organization","name":"pahoclock","url":"https://pahoclock.com/","logo":"https://pahoclock.com/images/logo_circle_crop.png","email":"opavlas@icloud.com","telephone":"+420737640746","sameAs":["https://www.instagram.com/paho_clock"]},{"@type":"WebSite","@id":"https://pahoclock.com/en/#website","url":"https://pahoclock.com/en/","name":"pahoclock","inLanguage":"en","publisher":{"@id":"https://pahoclock.com/#organization"}}]}</script>
+  <link rel="stylesheet" href="../css/style.css">
+</head>
+<body data-page="index">
+
+  <nav class="transparent" id="main-nav">
+    <a href="index.html" class="nav-logo">
+      <img src="../images/logo_circle_crop.png" alt="pahoclock">
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html" class="active" data-i18n="nav.home">Home</a></li>
+      <li><a href="products.html" data-i18n="nav.products">Products</a></li>
+      <li><a href="function.html" data-i18n="nav.function">Function</a></li>
+      <li><a href="contact.html" data-i18n="nav.contact">Contact</a></li>
+    </ul>
+    <a class="lang-toggle" href="../" hreflang="cs" aria-label="Přepnout do češtiny">CZ</a>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-bg" style="background-image: url('../images/pahoclock_dark_main.jpg');"></div>
+    <div class="hero-content">
+      <p class="hero-eyebrow" data-i18n="hero.eyebrow">Handcrafted timepieces</p>
+      <h1>PAHOCLOCK</h1>
+      <a href="products.html" class="btn btn-primary" data-i18n="hero.btn">See Products</a>
+    </div>
+    <span class="hero-scroll" data-i18n="hero.scroll">Scroll</span>
+  </section>
+
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <span class="footer-logo"><img src="../images/logo_circle_crop.png" alt="pahoclock"></span>
+        <span>&copy; 2026 pahoclock</span>
+        <div class="footer-right">
+          <a href="contact.html" style="color: inherit; text-decoration: none;" data-i18n="footer.contact">Contact</a>
+          <a href="https://www.instagram.com/paho_clock" target="_blank" rel="noopener" class="footer-ig" aria-label="Instagram">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const nav = document.getElementById('main-nav');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 40) {
+        nav.classList.remove('transparent');
+        nav.classList.add('solid');
+      } else {
+        nav.classList.remove('solid');
+        nav.classList.add('transparent');
+      }
+    });
+  </script>
+
+</body>
+</html>

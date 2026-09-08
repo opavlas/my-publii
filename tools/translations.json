@@ -1,0 +1,73 @@
+{
+  "_comment": "English source of truth for the generated /en/ pages. Edit the Czech text in the root *.html files, edit the English here, then run: python tools/build-en.py",
+  "strings": {
+    "nav.home": "Home",
+    "nav.products": "Products",
+    "nav.function": "Function",
+    "nav.contact": "Contact",
+    "footer.contact": "Contact",
+    "hero.eyebrow": "Handcrafted timepieces",
+    "hero.btn": "See Products",
+    "hero.scroll": "Scroll",
+    "products.heading": "Clocks",
+    "products.subheading": "Handcrafted — every piece an original",
+    "products.view": "View product →",
+    "function.heading": "Function",
+    "function.subheading": "How the clock tells time",
+    "function.desc": "The pahoclock displays time in words at five-minute intervals. Try the interactive demo below to see how the clock looks at different times.",
+    "product.back": "← All Products",
+    "product.specs": "Specifications",
+    "spec.material": "Material",
+    "spec.dimensions": "Dimensions",
+    "spec.weight": "Weight",
+    "spec.finish": "Finish",
+    "spec.power": "Power",
+    "spec.dimensions.value": "47.5 × 47.5 cm",
+    "spec.power.value": "5 W",
+    "product.order": "Order Now",
+    "dark.desc": "Handcrafted wall word clocks that uniquely display time in words in Czech or English. Each piece is an original, carefully crafted with attention to detail. The clocks not only accurately measure time but also become a distinctive design element of any interior. Ideal for those seeking a combination of functionality, originality, and modern style.",
+    "dark.material": "Glass",
+    "dark.weight": "5 kg",
+    "dark.finish": "Black Shiny Glass",
+    "corten.desc": "Handcrafted wall word clocks that uniquely display time in words in Czech or English. Each piece is an original, carefully crafted with attention to detail. The clocks not only accurately measure time but also become a distinctive design element of any interior. Ideal for those seeking a combination of functionality, originality, and modern style.",
+    "corten.material": "Corten Steel",
+    "corten.weight": "3 kg",
+    "corten.finish": "Rusty Metal",
+    "contact.title": "Contact",
+    "contact.subtitle": "Get in touch — we'd love to hear from you",
+    "contact.heading": "Please contact us.",
+    "contact.text": "We handle every order individually with each customer.",
+    "contact.email.label": "Email",
+    "contact.phone.label": "Phone"
+  },
+  "pages": {
+    "index.html": {
+      "title": "pahoclock — handcrafted wall word clocks",
+      "desc": "Handcrafted wall word clocks that tell the time in words, in English or Czech. Corten steel or black glass, 47.5 × 47.5 cm. Every piece an original."
+    },
+    "products.html": {
+      "title": "Products — Corten and Dark word clocks | pahoclock",
+      "desc": "The pahoclock collection of handcrafted word clocks — the Corten model in weathering steel and the Dark model in black glossy glass, 47.5 × 47.5 cm."
+    },
+    "function.html": {
+      "title": "Function — how the word clock tells time | pahoclock",
+      "desc": "The pahoclock displays the time in words at five-minute intervals. Try the interactive demo and see how the clock reads at different times."
+    },
+    "contact.html": {
+      "title": "Contact — order a word clock | pahoclock",
+      "desc": "Get in touch with the maker of pahoclock word clocks. Every order is handled individually — by email, phone or Instagram."
+    },
+    "dark.html": {
+      "title": "pahoclock Dark — word clock in black glass",
+      "desc": "pahoclock Dark — a handcrafted wall word clock in black glossy glass. 47.5 × 47.5 cm, 5 kg, 5 W. Price CZK 20,000."
+    },
+    "corten.html": {
+      "title": "pahoclock Corten — word clock in corten steel",
+      "desc": "pahoclock Corten — a handcrafted wall word clock in weathering corten steel. 47.5 × 47.5 cm, 3 kg, 5 W. Price CZK 20,000."
+    }
+  },
+  "alts": {
+    "Nástěnné slovní hodiny pahoclock Dark z černého lesklého skla": "pahoclock Dark word clock in black glossy glass, telling the time in words",
+    "Nástěnné slovní hodiny pahoclock Corten z cortenové oceli": "pahoclock Corten word clock in weathering corten steel, telling the time in words"
+  }
+}
