@@ -49,7 +49,7 @@
     "spec.supply": "Power supply",
     "spec.supply.value": "5 V / 2 A adapter, 5.5 / 2.1 mm barrel jack",
     "product.light": "The lettering is lit by LEDs at 5500 K. Brightness is adjustable across five levels, using the buttons on the back of the clock or the web app.",
-    "product.time": "An internal RTC with a backup battery keeps the clock running. It holds the time even when unplugged — several years on the backup battery — so neither a power cut nor a move means setting the clock again. The clock can also be connected to your home Wi-Fi network.",
+    "product.time": "An internal RTC with a backup battery keeps the clock running. It holds the time even when unplugged — several years on the backup battery — so a power cut does not mean setting the clock again. The clock can also be connected to your home Wi-Fi network.",
     "product.delivery": "The usual build time is three weeks from order. If anything goes wrong with the clock, the repair is free of charge.",
     "spec.leadtime": "Build time",
     "spec.leadtime.value": "3 weeks from order",
