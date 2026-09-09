@@ -1,15 +1,21 @@
 # /3d — HardPix pages
 
-Two standalone WebGL pages, outside the Publii-generated site:
+Standalone WebGL pages, outside the Publii-generated site, reached through their
+own index:
 
 | Page | What it is | Model |
 |---|---|---|
+| `index.html` | **Entry point.** Links the three below. Static and instant — it deliberately loads no model | — |
 | `film.html` | **The product film.** 64 s, plays once, then hands the model to the viewer | `HardPix2_TPX2.glb` |
 | `hardpix.html` | Scroll-driven exploded view (older, see *Known bugs*) | `HardPix_SWIMMR.glb` |
-| `index.html` | Scroll-driven exploded view of an earlier assembly | `t2m_assembly.glb` |
+| `assembly.html` | Scroll-driven exploded view of an earlier assembly | `t2m_assembly.glb` |
 
-Live at `https://pahoclock.com/3d/film.html` once pushed to `main` (GitHub Pages
-serves the repo root).
+Live at `https://pahoclock.com/3d/` (GitHub Pages serves the repo root).
+
+`assembly.html` **was** `index.html` until the index became a landing page. Nothing
+on the wider site links here — pahoclock.com is the word-clock site, and these
+pages are a separate project sharing the repo — so `/3d/` is the only way in, and
+a link added here is the only thing that makes a page reachable.
 
 ---
 
