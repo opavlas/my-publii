@@ -1,0 +1,7 @@
+# Audio auditioned against the film but not cleared for publication.
+# Keep source music out of the repo: this site is published from git, so a
+# committed track is a published track — and a large binary in history cannot be
+# removed without rewriting every commit after it.
+# A cleared cue belongs in 3d/assets/ as a short encode; see SCORE_FILE in
+# 3d/assets/film.js.
+3d/music/
