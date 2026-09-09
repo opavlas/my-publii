@@ -97,6 +97,10 @@ def en_url(page):
 # English structured data
 # ─────────────────────────────────────────────────────────────────────────────
 
+# the English tree quotes EUR; the Czech pages keep CZK
+EN_PRICE = "800"
+EN_CURRENCY = "EUR"
+
 ORG_ID = SITE + "/#organization"
 
 ORG = {
@@ -129,8 +133,9 @@ def product_ld(page, name, material, finish, weight):
         "offers": {
             "@type": "Offer",
             "url": en_url(page),
-            "price": "20000",
-            "priceCurrency": "CZK",
+            # the English pages quote EUR, so the schema has to match them
+            "price": EN_PRICE,
+            "priceCurrency": EN_CURRENCY,
             "availability": "https://schema.org/InStock",
             "itemCondition": "https://schema.org/NewCondition",
             "seller": {"@id": ORG_ID},

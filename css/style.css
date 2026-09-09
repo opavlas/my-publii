@@ -560,6 +560,27 @@ a.lang-toggle {
 }
 
 .spec-label { color: var(--text-muted); }
+
+.order-price {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 18px;
+}
+
+.order-price-label {
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.order-price-value {
+  font-size: 20px;
+  font-weight: 300;
+  letter-spacing: 0.04em;
+  color: var(--text);
+}
 .spec-value { color: var(--text); text-align: right; }
 
 /* ─── FADE-IN ANIMATION ──────────────────────── */
