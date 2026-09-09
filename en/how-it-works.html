@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Function — how the word clock tells time | pahoclock</title>
+  <meta name="description" content="The pahoclock displays the time in words at five-minute intervals. Try the interactive demo and see how the clock reads at different times.">
+  <link rel="canonical" href="https://pahoclock.com/en/how-it-works.html">
+  <link rel="alternate" hreflang="cs" href="https://pahoclock.com/jak-funguji.html">
+  <link rel="alternate" hreflang="en" href="https://pahoclock.com/en/how-it-works.html">
+  <link rel="alternate" hreflang="x-default" href="https://pahoclock.com/jak-funguji.html">
+  <link rel="icon" href="../images/logo_circle_crop.png">
+  <link rel="apple-touch-icon" href="../images/logo_circle_crop.png">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="pahoclock">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="cs_CZ">
+  <meta property="og:title" content="Function — how the word clock tells time | pahoclock">
+  <meta property="og:description" content="The pahoclock displays the time in words at five-minute intervals. Try the interactive demo and see how the clock reads at different times.">
+  <meta property="og:url" content="https://pahoclock.com/en/how-it-works.html">
+  <meta property="og:image" content="https://pahoclock.com/images/pahoclock_dark_main.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Function — how the word clock tells time | pahoclock">
+  <meta name="twitter:description" content="The pahoclock displays the time in words at five-minute intervals. Try the interactive demo and see how the clock reads at different times.">
+  <meta name="twitter:image" content="https://pahoclock.com/images/pahoclock_dark_main.jpg">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebPage","name":"How the pahoclock word clock tells time","url":"https://pahoclock.com/en/how-it-works.html","inLanguage":"en","isPartOf":{"@id":"https://pahoclock.com/en/#website"},"description":"The pahoclock displays time in words at five-minute intervals. Try the interactive demo below to see how the clock looks at different times."}</script>
+  <link rel="stylesheet" href="../css/style.css">
+  <style>
+    .function-intro {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 56px 40px;
+    }
+    .function-intro p {
+      font-size: 16px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      max-width: 60ch;
+    }
+    .function-frame-wrap {
+      width: 100%;
+      height: calc(100vh - var(--nav-height));
+      background: #faf9f5;
+    }
+    .function-frame-wrap iframe {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+    }
+    @media (max-width: 900px) {
+      .function-intro { padding: 16px 28px 24px; }
+      .function-frame-wrap { height: 80vh; }
+    }
+    @media (max-width: 600px) {
+      .function-intro { padding: 12px 20px 20px; }
+      .function-intro p { font-size: 15px; }
+      .function-frame-wrap {
+        height: 60vh;
+        min-height: 360px;
+        max-height: 480px;
+      }
+    }
+  </style>
+</head>
+<body data-page="function">
+
+  <nav class="solid" id="main-nav">
+    <a href="index.html" class="nav-logo">
+      <img src="../images/logo_circle_crop.png" alt="pahoclock">
+    </a>
+    <ul class="nav-links">
+      <li><a href="index.html" data-i18n="nav.home">Home</a></li>
+      <li><a href="word-clocks.html" data-i18n="nav.products">Products</a></li>
+      <li><a href="how-it-works.html" class="active" data-i18n="nav.function">Function</a></li>
+      <li><a href="contact.html" data-i18n="nav.contact">Contact</a></li>
+    </ul>
+    <a class="lang-toggle" href="../jak-funguji.html" hreflang="cs" aria-label="Přepnout do češtiny">CZ</a>
+  </nav>
+
+  <main style="padding-top: var(--nav-height);">
+
+    <div class="products-page-header fade-up">
+      <h1 data-i18n="function.heading">Function</h1>
+      <p data-i18n="function.subheading">How the clock tells time</p>
+    </div>
+
+    <div class="function-intro fade-up">
+      <p data-i18n="function.desc">The pahoclock displays time in words at five-minute intervals. Try the interactive demo below to see how the clock looks at different times.</p>
+    </div>
+
+    <div class="function-frame-wrap">
+      <iframe src="../function/czech-word-clock.html" title="Czech Word Clock" loading="lazy"></iframe>
+    </div>
+
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <span class="footer-logo"><img src="../images/logo_circle_crop.png" alt="pahoclock"></span>
+        <span>&copy; 2026 pahoclock</span>
+        <div class="footer-right">
+          <a href="contact.html" style="color: inherit; text-decoration: none;" data-i18n="footer.contact">Contact</a>
+          <a href="https://www.instagram.com/paho_clock" target="_blank" rel="noopener" class="footer-ig" aria-label="Instagram">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+
+</body>
+</html>

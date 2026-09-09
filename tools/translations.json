@@ -55,27 +55,27 @@
     "spec.leadtime.value": "3 weeks from order"
   },
   "pages": {
-    "index.html": {
+    "index": {
       "title": "pahoclock — handcrafted wall word clocks",
       "desc": "Handcrafted wall word clocks that tell the time in words, in English or Czech. Corten steel or black glass, 47.5 × 47.5 cm. Every piece an original."
     },
-    "products.html": {
+    "products": {
       "title": "Products — Corten and Dark word clocks | pahoclock",
       "desc": "The pahoclock collection of handcrafted word clocks — the Corten model in weathering steel and the Dark model in black glossy glass, 47.5 × 47.5 cm."
     },
-    "function.html": {
+    "function": {
       "title": "Function — how the word clock tells time | pahoclock",
       "desc": "The pahoclock displays the time in words at five-minute intervals. Try the interactive demo and see how the clock reads at different times."
     },
-    "contact.html": {
+    "contact": {
       "title": "Contact — order a word clock | pahoclock",
       "desc": "Get in touch with the maker of pahoclock word clocks. Every order is handled individually — by email, phone or Instagram."
     },
-    "dark.html": {
+    "dark": {
       "title": "pahoclock Dark — word clock in black glass",
       "desc": "pahoclock Dark — a handcrafted wall word clock in black glossy glass. 47.5 × 47.5 cm, 5 kg, 5 W. Price CZK 20,000."
     },
-    "corten.html": {
+    "corten": {
       "title": "pahoclock Corten — word clock in corten steel",
       "desc": "pahoclock Corten — a handcrafted wall word clock in weathering corten steel. 47.5 × 47.5 cm, 3 kg, 5 W. Price CZK 20,000."
     }

@@ -5,6 +5,10 @@ The Czech HTML files are the source of truth for structure and Czech text.
 English text lives in tools/translations.json, keyed by the data-i18n
 attributes already present in the markup.
 
+Each page has a logical id (index, products, function, contact, dark,
+corten) and a separate filename per language, so both trees carry
+keyword-bearing slugs in their own language.
+
 Run after editing any Czech page or the translations:
 
     python tools/build-en.py
@@ -23,20 +27,38 @@ ROOT = os.path.dirname(HERE)
 EN_DIR = os.path.join(ROOT, "en")
 SITE = "https://pahoclock.com"
 
-PAGES = ["index.html", "products.html", "function.html",
-         "contact.html", "dark.html", "corten.html"]
-
-IMAGES = {
-    "index.html": "/images/pahoclock_dark_main.jpg",
-    "products.html": "/images/pahoclock_main.JPEG",
-    "function.html": "/images/pahoclock_dark_main.jpg",
-    "contact.html": "/images/pahoclock_dark_main.jpg",
-    "dark.html": "/images/pahoclock_dark_main.jpg",
-    "corten.html": "/images/pahoclock_main.JPEG",
+# logical page id -> filename in each language
+FILES = {
+    "index":    {"cs": "index.html",                  "en": "index.html"},
+    "products": {"cs": "slovni-hodiny.html",          "en": "word-clocks.html"},
+    "function": {"cs": "jak-funguji.html",            "en": "how-it-works.html"},
+    "contact":  {"cs": "kontakt.html",                "en": "contact.html"},
+    "dark":     {"cs": "slovni-hodiny-dark.html",     "en": "word-clock-dark.html"},
+    "corten":   {"cs": "slovni-hodiny-corten.html",   "en": "word-clock-corten.html"},
 }
 
-PRIORITY = {"index.html": "1.0", "products.html": "0.9", "corten.html": "0.8",
-            "dark.html": "0.8", "function.html": "0.7", "contact.html": "0.6"}
+# the pre-rename filenames, kept alive as redirect stubs
+LEGACY = {
+    "products": "products.html",
+    "function": "function.html",
+    "contact":  "contact.html",
+    "dark":     "dark.html",
+    "corten":   "corten.html",
+}
+
+PAGES = ["index", "products", "function", "contact", "dark", "corten"]
+
+IMAGES = {
+    "index":    "/images/pahoclock_dark_main.jpg",
+    "products": "/images/pahoclock_main.JPEG",
+    "function": "/images/pahoclock_dark_main.jpg",
+    "contact":  "/images/pahoclock_dark_main.jpg",
+    "dark":     "/images/pahoclock_dark_main.jpg",
+    "corten":   "/images/pahoclock_main.JPEG",
+}
+
+PRIORITY = {"index": "1.0", "products": "0.9", "corten": "0.8",
+            "dark": "0.8", "function": "0.7", "contact": "0.6"}
 
 with io.open(os.path.join(HERE, "translations.json"), encoding="utf-8") as fh:
     TR = json.load(fh)
@@ -55,12 +77,20 @@ def write(path, text):
         fh.write(text)
 
 
+def cs_file(page):
+    return FILES[page]["cs"]
+
+
+def en_file(page):
+    return FILES[page]["en"]
+
+
 def cs_url(page):
-    return SITE + ("/" if page == "index.html" else "/" + page)
+    return SITE + ("/" if page == "index" else "/" + cs_file(page))
 
 
 def en_url(page):
-    return SITE + "/en/" + ("" if page == "index.html" else page)
+    return SITE + "/en/" + ("" if page == "index" else en_file(page))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -86,10 +116,10 @@ def product_ld(page, name, material, finish, weight):
         "@context": "https://schema.org",
         "@type": "Product",
         "name": "pahoclock " + name,
-        "description": STRINGS[name.lower() + ".desc"],
+        "description": STRINGS[page + ".desc"],
         "image": SITE + IMAGES[page],
         "url": en_url(page),
-        "sku": "pahoclock-" + name.lower(),
+        "sku": "pahoclock-" + page,
         "brand": {"@type": "Brand", "name": "pahoclock"},
         "material": material,
         "color": finish,
@@ -114,37 +144,37 @@ def crumbs(page, name):
         "@type": "BreadcrumbList",
         "itemListElement": [
             {"@type": "ListItem", "position": 1, "name": "Home",
-             "item": en_url("index.html")},
+             "item": en_url("index")},
             {"@type": "ListItem", "position": 2, "name": "Products",
-             "item": en_url("products.html")},
+             "item": en_url("products")},
             {"@type": "ListItem", "position": 3, "name": name, "item": en_url(page)},
         ],
     }
 
 
 def page_ld(page):
-    if page == "index.html":
+    if page == "index":
         return [{"@context": "https://schema.org", "@graph": [
             ORG,
-            {"@type": "WebSite", "@id": SITE + "/en/#website", "url": en_url("index.html"),
+            {"@type": "WebSite", "@id": SITE + "/en/#website", "url": en_url("index"),
              "name": "pahoclock", "inLanguage": "en",
              "publisher": {"@id": ORG_ID}},
         ]}]
-    if page == "products.html":
+    if page == "products":
         return [{"@context": "https://schema.org", "@type": "CollectionPage",
                  "name": "pahoclock word clocks", "url": en_url(page), "inLanguage": "en",
                  "mainEntity": {"@type": "ItemList", "itemListElement": [
                      {"@type": "ListItem", "position": 1, "name": "pahoclock Dark",
-                      "url": en_url("dark.html")},
+                      "url": en_url("dark")},
                      {"@type": "ListItem", "position": 2, "name": "pahoclock Corten",
-                      "url": en_url("corten.html")},
+                      "url": en_url("corten")},
                  ]}}]
-    if page == "function.html":
+    if page == "function":
         return [{"@context": "https://schema.org", "@type": "WebPage",
                  "name": "How the pahoclock word clock tells time", "url": en_url(page),
                  "inLanguage": "en", "isPartOf": {"@id": SITE + "/en/#website"},
                  "description": STRINGS["function.desc"]}]
-    if page == "contact.html":
+    if page == "contact":
         return [{"@context": "https://schema.org", "@type": "ContactPage",
                  "url": en_url(page), "inLanguage": "en", "name": "Contact — pahoclock",
                  "about": {"@id": ORG_ID},
@@ -152,11 +182,11 @@ def page_ld(page):
                      "@type": "ContactPoint", "contactType": "customer service",
                      "email": "opavlas@icloud.com", "telephone": "+420737640746",
                      "availableLanguage": ["en", "cs"]})}]
-    if page == "dark.html":
+    if page == "dark":
         return [product_ld(page, "Dark", STRINGS["dark.material"],
                            STRINGS["dark.finish"], 5),
                 crumbs(page, "Dark")]
-    if page == "corten.html":
+    if page == "corten":
         return [product_ld(page, "Corten", STRINGS["corten.material"],
                            STRINGS["corten.finish"], 3),
                 crumbs(page, "Corten")]
@@ -192,7 +222,7 @@ def en_head(page):
     L.append('  <link rel="icon" href="../images/logo_circle_crop.png">\n')
     L.append('  <link rel="apple-touch-icon" href="../images/logo_circle_crop.png">\n')
     L.append('  <meta property="og:type" content="%s">\n'
-             % ("product" if page in ("dark.html", "corten.html") else "website"))
+             % ("product" if page in ("dark", "corten") else "website"))
     L.append('  <meta property="og:site_name" content="pahoclock">\n')
     L.append('  <meta property="og:locale" content="en_US">\n')
     L.append('  <meta property="og:locale:alternate" content="cs_CZ">\n')
@@ -214,9 +244,20 @@ def en_head(page):
 # Step 1 — patch the Czech pages: hreflang, language link, drop lang.js
 # ─────────────────────────────────────────────────────────────────────────────
 
+def fix_cs_urls(src):
+    """Point every absolute URL at the current Czech filenames.
+
+    The Czech head metadata (canonical, og:url, JSON-LD) is hand-written in
+    the page, so a rename would otherwise leave it aimed at the old URL.
+    """
+    for page, legacy in LEGACY.items():
+        src = src.replace(SITE + "/" + legacy, cs_url(page))
+    return src
+
+
 def patch_czech(page):
-    path = os.path.join(ROOT, page)
-    lines = read(path).splitlines(True)
+    path = os.path.join(ROOT, cs_file(page))
+    lines = fix_cs_urls(read(path)).splitlines(True)
     out = []
     for line in lines:
         if line.strip().startswith('<link rel="alternate" hreflang'):
@@ -230,7 +271,7 @@ def patch_czech(page):
             out.append('  <link rel="alternate" hreflang="x-default" href="%s">\n'
                        % cs_url(page))
     src = "".join(out)
-    href = "en/" + ("" if page == "index.html" else page)
+    href = "en/" + ("" if page == "index" else en_file(page))
     link = ('<a class="lang-toggle" href="%s" hreflang="en" '
             'aria-label="Switch to English">EN</a>' % href)
     src, n = re.subn(r'<button class="lang-toggle"[^>]*>EN</button>', link, src)
@@ -255,7 +296,7 @@ def translate(match):
 
 
 def build_en(page):
-    src = read(os.path.join(ROOT, page))
+    src = read(os.path.join(ROOT, cs_file(page)))
 
     # head: strip the Czech metadata, insert the English metadata
     out, done = [], False
@@ -276,40 +317,84 @@ def build_en(page):
     for cs, en in ALTS.items():
         src = src.replace('alt="%s"' % cs, 'alt="%s"' % en)
 
+    # internal links point at the English filenames
+    for other in PAGES:
+        src = src.replace('href="%s"' % cs_file(other), 'href="%s"' % en_file(other))
+
     # this page now lives one directory down
     src = re.sub(r'(src|href)="(css/|images/|js/|function/)', r'\1="../\2', src)
     src = src.replace("url('images/", "url('../images/")
 
     # language link points back to the Czech page
-    back = "../" + ("" if page == "index.html" else page)
+    back = "../" + ("" if page == "index" else cs_file(page))
     src = re.sub(r'<a class="lang-toggle"[^>]*>EN</a>',
                  '<a class="lang-toggle" href="%s" hreflang="cs" '
                  'aria-label="Přepnout do češtiny">CZ</a>' % back, src)
 
     if not os.path.isdir(EN_DIR):
         os.makedirs(EN_DIR)
-    write(os.path.join(EN_DIR, page), src)
+    write(os.path.join(EN_DIR, en_file(page)), src)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 3 — sitemap covering both languages
+# Step 3 — keep the pre-rename URLs alive as redirect stubs
+# ─────────────────────────────────────────────────────────────────────────────
+
+STUB = u"""<!DOCTYPE html>
+<html lang="%(lang)s">
+<head>
+  <meta charset="UTF-8">
+  <title>%(title)s</title>
+  <meta name="robots" content="noindex, follow">
+  <link rel="canonical" href="%(canonical)s">
+  <meta http-equiv="refresh" content="0; url=%(target)s">
+</head>
+<body>
+  <p>%(sentence)s <a href="%(target)s">%(target)s</a></p>
+</body>
+</html>
+"""
+
+
+def build_stubs():
+    for page, legacy in LEGACY.items():
+        # Czech tree
+        write(os.path.join(ROOT, legacy), STUB % {
+            "lang": "cs",
+            "title": u"Stránka se přesunula — pahoclock",
+            "canonical": cs_url(page),
+            "target": cs_file(page),
+            "sentence": u"Tato stránka se přesunula na",
+        })
+        # English tree, where the filename actually changed
+        if legacy != en_file(page):
+            write(os.path.join(EN_DIR, legacy), STUB % {
+                "lang": "en",
+                "title": "Page moved — pahoclock",
+                "canonical": en_url(page),
+                "target": en_file(page),
+                "sentence": "This page has moved to",
+            })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Step 4 — sitemap covering both languages
 # ─────────────────────────────────────────────────────────────────────────────
 
 def build_sitemap():
     today = datetime.date.today().isoformat()
     sitemap_images = {
-        "index.html": ["/images/pahoclock_dark_main.jpg"],
-        "products.html": ["/images/pahoclock_dark_main.jpg", "/images/pahoclock_main.JPEG"],
-        "dark.html": ["/images/pahoclock_dark_main.jpg"],
-        "corten.html": ["/images/pahoclock_main.JPEG"],
+        "index": ["/images/pahoclock_dark_main.jpg"],
+        "products": ["/images/pahoclock_dark_main.jpg", "/images/pahoclock_main.JPEG"],
+        "dark": ["/images/pahoclock_dark_main.jpg"],
+        "corten": ["/images/pahoclock_main.JPEG"],
     }
     out = ['<?xml version="1.0" encoding="UTF-8"?>',
            '<?xml-stylesheet type="text/xsl" href="%s/sitemap.xsl"?>' % SITE,
            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
            'xmlns:image="http://www.google.com/schemas/sitemap-image/1.1" '
            'xmlns:xhtml="http://www.w3.org/1999/xhtml">']
-    order = ["index.html", "products.html", "corten.html", "dark.html",
-             "function.html", "contact.html"]
+    order = ["index", "products", "corten", "dark", "function", "contact"]
     for page in order:
         for loc in (cs_url(page), en_url(page)):
             out.append("<url>")
@@ -329,7 +414,7 @@ def build_sitemap():
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# Step 4 — the language link is an <a> now, so it needs a button's styling
+# Step 5 — the language link is an <a> now, so it needs a button's styling
 # ─────────────────────────────────────────────────────────────────────────────
 
 ANCHOR_CSS = """
@@ -356,6 +441,8 @@ if __name__ == "__main__":
     for p in PAGES:
         patch_czech(p)
         build_en(p)
-        print("built en/" + p)
+        print("built en/" + en_file(p))
+    build_stubs()
+    print("redirect stubs: %d" % (len(LEGACY) * 2 - 1))
     build_sitemap()
     print("sitemap.xml: %d urls" % (len(PAGES) * 2))
