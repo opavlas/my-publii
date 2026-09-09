@@ -98,7 +98,7 @@ def en_url(page):
 # ─────────────────────────────────────────────────────────────────────────────
 
 # the English tree quotes EUR; the Czech pages keep CZK
-EN_PRICE = "800"
+EN_PRICE = "830"
 EN_CURRENCY = "EUR"
 
 ORG_ID = SITE + "/#organization"

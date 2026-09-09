@@ -53,7 +53,7 @@
     "product.delivery": "The usual build time is three weeks from order. If anything goes wrong with the clock, the repair is free of charge.",
     "spec.leadtime": "Build time",
     "spec.leadtime.value": "3 weeks from order",
-    "product.price": "800 €",
+    "product.price": "830 €",
     "product.price.label": "Price"
   },
   "pages": {
@@ -75,11 +75,11 @@
     },
     "dark": {
       "title": "pahoclock Dark — word clock in black glass",
-      "desc": "pahoclock Dark — a handcrafted wall word clock in black glossy glass. 47.5 × 47.5 cm, 5 kg, 5 W. Price 800 €."
+      "desc": "pahoclock Dark — a handcrafted wall word clock in black glossy glass. 47.5 × 47.5 cm, 5 kg, 5 W. Price 830 €."
     },
     "corten": {
       "title": "pahoclock Corten — word clock in corten steel",
-      "desc": "pahoclock Corten — a handcrafted wall word clock in weathering corten steel. 47.5 × 47.5 cm, 3 kg, 5 W. Price 800 €."
+      "desc": "pahoclock Corten — a handcrafted wall word clock in weathering corten steel. 47.5 × 47.5 cm, 3 kg, 5 W. Price 830 €."
     }
   },
   "alts": {
