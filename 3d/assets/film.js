@@ -17,8 +17,29 @@ import {
 import {
   normalise, discoverParts, explodeLayout, findSensor, fitBox, dirFrom, describe,
 } from './model-rig.js'
+import { createScore } from './film-score.js'
 
 const MODEL_FILE = './HardPix2_TPX2.glb'
+
+// Point this at a licensed audio track to score the film with it instead of the
+// synthesised cue in film-score.js. Anything set here is served from this repo
+// to every visitor, so only a track you hold publication rights to belongs in
+// it — audition anything else with ?score=<path>, which is not committed.
+//
+// SCORE_OFFSET picks WHICH stretch of a long track plays under the 64 seconds
+// of picture: film second 0 becomes track second SCORE_OFFSET. Audition an
+// in-point with ?score-at=<seconds> before settling on one.
+const SCORE_FILE = ''
+const SCORE_OFFSET = 0
+
+// The housing. The CAD ships every shell on ONE material called
+// "AluminumPolished" whose numbers are not aluminium at all: metalness 0.45 at
+// roughness 0 is a half-dielectric mirror, which renders as dark glass under
+// this lighting. These are the real thing — aluminium's F0 (near-white, faintly
+// blue), fully metallic, at the roughness of a machined-and-bead-blasted
+// enclosure rather than a shaving mirror.
+const ALUMINIUM = { color: 0xf3f4f6, metalness: 1.0, roughness: 0.24, env: 1.85 }
+const SHELL_ROLES = ['cover', 'frame', 'base']
 
 // three.js numeric constants — the chunk exports the classes but not the enums.
 const ADDITIVE = 2, NEAREST = 1003, LINEAR = 1006, DOUBLE_SIDE = 2
@@ -28,7 +49,18 @@ const ui = {
   loader: $('loader'), bar: $('bar'), pct: $('pct'), stage: $('stage'),
   capMain: $('cap-main'), capSub: $('cap-sub'), labels: $('labels'), capWrap: $('captions'),
   scrub: $('scrub'), played: $('played'), replay: $('replay'), hint: $('hint'),
-  playpause: $('playpause'), posterBtn: $('poster-play'),
+  playpause: $('playpause'), posterBtn: $('poster-play'), sound: $('sound'),
+}
+
+// ---------------------------------------------------------------- score
+const score = createScore({
+  file: new URLSearchParams(location.search).get('score') || SCORE_FILE,
+  offset: parseFloat(new URLSearchParams(location.search).get('score-at')) || SCORE_OFFSET,
+})
+function paintSound() {
+  ui.sound.textContent = score.enabled ? (score.blocked ? 'Sound — click' : 'Sound on') : 'Sound off'
+  ui.sound.setAttribute('aria-pressed', String(score.enabled))
+  ui.sound.classList.toggle('armed', score.blocked)
 }
 
 // ---------------------------------------------------------------- renderer
@@ -55,7 +87,11 @@ function buildEnvironment() {
   sky.addColorStop(0.00, '#5a5f6b')      // zenith
   sky.addColorStop(0.45, '#2a2c33')
   sky.addColorStop(0.52, '#141416')      // horizon
-  sky.addColorStop(1.00, '#050506')      // ground
+  // A pure-metal shell reflects the environment and nothing else, so a black
+  // lower hemisphere would leave every vertical face dead. This is the faint
+  // floor bounce a real product shot gets from the table.
+  sky.addColorStop(0.72, '#111114')
+  sky.addColorStop(1.00, '#08080a')      // ground
   g.fillStyle = sky
   g.fillRect(0, 0, 256, 128)
   // a warm highlight where the key light sits, so edges catch a specular streak
@@ -76,6 +112,54 @@ function buildEnvironment() {
 }
 scene.environment = buildEnvironment()
 
+/**
+ * A second, brighter environment used ONLY by the aluminium shells.
+ *
+ * A fully metallic surface has no diffuse response at all: every photon it
+ * shows the camera is a reflection, so with the scene environment above — a
+ * dark studio built for dielectric boards — the housing renders almost black.
+ * Raising the scene environment instead would light the boards' diffuse IBL too
+ * and change the look of the whole film, so the shells get their own.
+ *
+ * Note where the sources go. An equirect is sampled Y-up while this model is
+ * Z-up, so the map's poles point along the instrument's SHORT axis and "above
+ * the instrument" (world +Z) lands on the equator at u=0.75 — x=192, y=64 —
+ * which is where the key softbox has to sit. Painting a gradient by latitude,
+ * as a Y-up scene would, lights the thing sideways.
+ */
+function buildHousingEnvironment() {
+  const c = document.createElement('canvas')
+  c.width = 256; c.height = 128
+  const g = c.getContext('2d')
+  g.fillStyle = '#191b20'                      // the room the instrument sits in
+  g.fillRect(0, 0, 256, 128)
+  g.globalCompositeOperation = 'lighter'
+  // Soft elliptical source, drawn three times so it wraps across the seam.
+  const softbox = (cx, cy, rx, ry, colour, alpha) => {
+    for (const ox of [-256, 0, 256]) {
+      g.save()
+      g.translate(cx + ox, cy)
+      g.scale(rx, ry)
+      const grad = g.createRadialGradient(0, 0, 0, 0, 0, 1)
+      grad.addColorStop(0, 'rgba(' + colour + ',' + alpha + ')')
+      grad.addColorStop(0.55, 'rgba(' + colour + ',' + (alpha * 0.45).toFixed(3) + ')')
+      grad.addColorStop(1, 'rgba(' + colour + ',0)')
+      g.fillStyle = grad
+      g.beginPath(); g.arc(0, 0, 1, 0, Math.PI * 2); g.fill()
+      g.restore()
+    }
+  }
+  softbox(192, 64, 84, 108, '242,246,255', 1.00)   // key — directly over the instrument
+  softbox(150, 26, 54, 40, '255,244,222', 0.55)    // warm kicker, along the key light
+  softbox(238, 100, 52, 40, '150,178,220', 0.35)   // cool rim from behind
+  softbox(64, 64, 76, 96, '48,52,62', 0.75)        // the floor it stands on, bounced back
+  const tex = new CanvasTexture(c)
+  tex.mapping = 303                       // EquirectangularReflectionMapping
+  tex.colorSpace = 'srgb'
+  return tex
+}
+const HOUSING_ENV = buildHousingEnvironment()
+
 const camera = new PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.02, 3000)
 camera.up.set(0, 0, 1)                // the model is Z-up
 
@@ -86,12 +170,17 @@ const rim = new DirectionalLight(0xb8703a, 1.5); rim.position.set(-2.2, -1.4, -3
 scene.add(ambient, key, fill, rim)
 const LIGHT_LEVEL = { v: 0 }
 const baseIntensity = { a: 0.30, k: 3.4, f: 0.42, r: 1.5 }
+const housingMats = []          // the aluminium shells, filled in by build()
 function applyLights() {
   const v = LIGHT_LEVEL.v
   ambient.intensity = baseIntensity.a * v
   key.intensity = baseIntensity.k * v
   fill.intensity = baseIntensity.f * v
   rim.intensity = baseIntensity.r * v
+  // A fully metallic surface takes no diffuse light, so dimming the lamps alone
+  // would leave the housing lit by the environment through the opening fade —
+  // it has to build out of black with everything else.
+  for (const m of housingMats) m.envMapIntensity = ALUMINIUM.env * v
 }
 
 // ---------------------------------------------------------------- loading
@@ -295,6 +384,30 @@ function build(gltf, moonTex) {
       ghostable.push(o.material)
     })
   })
+
+  // Real aluminium on the shells. Runs AFTER the ghost clone above so the cover
+  // gets the treatment on its own copy rather than on a material it no longer
+  // uses. All four shells are one machined enclosure sharing one material in the
+  // .glb, so they are done together — giving the cover metal and leaving the
+  // frames as they were would only read as a mismatch in the exploded shots.
+  const shellMats = new Set()
+  parts.filter(p => SHELL_ROLES.includes(p.role)).forEach(p => p.object.traverse(o => {
+    if (!o.isMesh || !o.material) return
+    for (const m of (Array.isArray(o.material) ? o.material : [o.material])) {
+      if (m.metalness !== undefined) shellMats.add(m)      // MeshStandard/Physical only
+    }
+  }))
+  shellMats.forEach(m => {
+    m.color.setHex(ALUMINIUM.color)
+    m.metalness = ALUMINIUM.metalness
+    m.roughness = ALUMINIUM.roughness
+    m.envMap = HOUSING_ENV                                 // overrides scene.environment
+    m.envMapIntensity = ALUMINIUM.env * LIGHT_LEVEL.v
+    m.needsUpdate = true
+    housingMats.push(m)
+  })
+  console.log('FILM housing: aluminium on ' + shellMats.size + ' material(s) across ' +
+    parts.filter(p => SHELL_ROLES.includes(p.role)).map(p => p.name).join(', '))
 
   // Dimension caption, measured from the housing shells (not the connector
   // overhang) so it stays true for any revision.
@@ -671,6 +784,7 @@ function onTimelineTick() {
 }
 function onFilmEnd() {
   ended = true
+  score.reset()                 // the cue has already faded out by 64s; drop the tail
   setPaused(false)
   controls.enabled = true
   controls.target.set(0, 0, 0)
@@ -681,6 +795,7 @@ function play() {
   ended = false
   ui.stage.classList.remove('ended')
   setPaused(false)
+  score.reset()
   controls.enabled = false
   screens.forEach(s => { s.clear(); s.rate = 0 })
   hero.progress = 0; hero.shown = 0
@@ -714,6 +829,7 @@ function tick(now) {
     if (hero.progress > 0 && hero.shown < heroOrdered.length) drawHeroProgress()
     screens.forEach(s => s.upload())
   }
+  if (master) score.update(master.time(), !ended && !master.paused())
   if (ended) controls.update()
   else applyCamera()
   positionLabels()
@@ -774,6 +890,10 @@ window.addEventListener('resize', () => {
       ui.stage.classList.add('intro')
       setTimeout(() => ui.stage.classList.remove('intro'), 3600)
       setTimeout(play, reduced ? 120 : 350)
+      // Sound is wanted from the start, but no browser will start audio without
+      // a gesture, so the button reads "Sound — click" until one arrives and the
+      // first interaction anywhere on the page starts the cue.
+      score.enable(true).then(paintSound)
     }
   } catch (err) {
     ui.pct.textContent = '—'
@@ -785,6 +905,19 @@ window.addEventListener('resize', () => {
 ui.posterBtn.addEventListener('click', togglePlay)
 ui.replay.addEventListener('click', play)
 ui.playpause.addEventListener('click', togglePlay)
+ui.sound.addEventListener('click', async () => {
+  await score.enable(!score.enabled)
+  score.arm()                                  // this click IS the gesture
+  paintSound()
+})
+// Any first interaction unblocks the audio the page already asked for. Once the
+// viewer has used the Sound button themselves, score.enabled carries their
+// choice and arm() respects it.
+;['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => {
+  score.arm()
+  paintSound()
+  setTimeout(paintSound, 150)      // ctx.resume() settles a beat after the gesture
+}, { passive: true }))
 ui.scrub.addEventListener('click', e => {
   if (!master) return
   const r = ui.scrub.getBoundingClientRect()

@@ -102,6 +102,9 @@
       transition: color .3s ease, letter-spacing .3s ease;
     }
     button:hover { color: var(--text); letter-spacing: 0.26em; }
+    /* audio cannot start until the viewer touches the page, so while the score
+       is waiting on that gesture the control says so in the accent colour */
+    #sound.armed { color: var(--copper); }
     #hint {
       position: absolute; left: 50%; bottom: 4.5rem; transform: translateX(-50%);
       font-size: 10px; text-transform: uppercase; letter-spacing: 0.22em; color: var(--dim);
@@ -143,6 +146,7 @@
     <div id="transport">
       <button id="playpause">Pause</button>
       <button id="replay">Replay</button>
+      <button id="sound" aria-pressed="false" title="Toggle the score">Sound off</button>
       <div id="scrub"><div id="track"><div id="played"></div></div></div>
     </div>
   </div>
