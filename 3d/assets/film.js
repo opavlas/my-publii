@@ -21,15 +21,23 @@ import { createScore } from './film-score.js'
 
 const MODEL_FILE = './HardPix2_TPX2.glb'
 
-// Point this at a licensed audio track to score the film with it instead of the
-// synthesised cue in film-score.js. Anything set here is served from this repo
-// to every visitor, so only a track you hold publication rights to belongs in
-// it — audition anything else with ?score=<path>, which is not committed.
+// The score. Anything set here is served from this repo to every visitor, so
+// only a track you hold publication rights to belongs in it — audition anything
+// else with ?score=<path>, which points outside the committed tree.
 //
-// SCORE_OFFSET picks WHICH stretch of a long track plays under the 64 seconds
-// of picture: film second 0 becomes track second SCORE_OFFSET. Audition an
-// in-point with ?score-at=<seconds> before settling on one.
-const SCORE_FILE = ''
+// Currently: "Interstellar" by leberch, from Pixabay, free for use under the
+// Pixabay Content License (commercial and website use permitted, no attribution
+// required) — https://pixabay.com/music/ambient-interstellar-589820/
+// The source is 2:40; assets/score.mp3 is its first 66 seconds, cut on MP3
+// frame boundaries so it is not re-encoded. Set this to '' to go back to the
+// synthesised cue in film-score.js, which is unchanged and still the fallback
+// if this file ever fails to load.
+//
+// SCORE_OFFSET picks WHICH stretch of a longer track plays under the 64 seconds
+// of picture: film second 0 becomes track second SCORE_OFFSET. It is 0 here
+// because score.mp3 is already trimmed to the film. Audition another in-point
+// against the untrimmed original with ?score-at=<seconds>.
+const SCORE_FILE = './assets/score.mp3'
 const SCORE_OFFSET = 0
 
 // The housing. The CAD ships every shell on ONE material called

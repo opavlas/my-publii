@@ -193,9 +193,29 @@ the opening fade while everything else builds out of black.
 
 ## The score
 
-`assets/film-score.js`. No audio is downloaded: the default cue is synthesised
-with Web Audio — a tonic pedal, hymnal organ chords, a rising sixteenth-note
-ostinato, one long build.
+`assets/film-score.js`. Two sources, one scheduler.
+
+**What currently ships** is `assets/score.mp3` — "Interstellar" by leberch, from
+Pixabay, free under the [Pixabay Content License][pxl] (commercial and website
+use permitted, no attribution required). The source track is 2:40; the committed
+file is its first 66 seconds, cut on MP3 frame boundaries so it is **not
+re-encoded** — 2.0 MB rather than 4.9 MB, at the original 256 kbps. The untrimmed
+original is kept out of the repo in `3d/music/`.
+
+```sh
+node tools/trim-mp3.mjs music/source.mp3 assets/score.mp3 66
+```
+
+`tools/trim-mp3.mjs` keeps whole MPEG-1 Layer III frames up to the requested
+length and drops the rest, so there is no generation loss and no ffmpeg
+dependency — useful, since ffmpeg is not installed on this machine.
+
+[pxl]: https://pixabay.com/service/license-summary/
+
+**The fallback** is a cue synthesised with Web Audio — a tonic pedal, hymnal
+organ chords, a rising sixteenth-note ostinato, one long build. Set `SCORE_FILE`
+to `''` to use it, and note it also takes over automatically if the audio file
+ever fails to load, so a 404 degrades to music rather than to silence.
 
 **It is driven by the film's playhead, never by wall-clock time.** A scrub is a
 seek, and a seek re-cues the organ rather than letting the music drift a few bars
@@ -205,20 +225,32 @@ the matching row must move with it, or the swell lands next to the cut instead o
 on it. Density carries the dynamic: quarters, then eighths, then sixteenths, plus
 an octave doubling once the storm is on screen.
 
-To use a real track instead, set `SCORE_FILE` in `film.js` to a path under
-`assets/`. It then plays in place of the synth, kept in sync through every pause,
-scrub and replay; if it fails to load the film falls back to the synth rather
-than going silent. `SCORE_OFFSET` picks *which* stretch of a long track plays
-under the 64 seconds — film second 0 becomes track second `SCORE_OFFSET`.
+A file, once supplied, is kept in sync through every pause, scrub and replay the
+same way the synth is — the playhead drives both.
+
+**To swap the track**, drop the new file in `assets/`, point `SCORE_FILE` at it,
+and trim it to the film. To find an in-point in a longer track first, audition it
+without committing anything:
+
+```
+film.html?score=./music/candidate.mp3&score-at=45
+```
+
+`score-at` shifts the whole cue: film second 0 becomes track second 45. Once you
+know the number, cut the file at that point and reset `SCORE_OFFSET` to 0 — a
+trimmed file beats seeking into a long one, because the bytes past the 64-second
+mark are downloaded and never heard.
 
 Two things to know:
 
 - **This site publishes from git, so a committed track is a published track.**
-  Only audio you hold web rights to belongs in `assets/`. `3d/music/` is
+  Only audio you hold web rights to belongs in `assets/` — record the licence in
+  the comment above `SCORE_FILE`, as the current one does. `3d/music/` is
   gitignored as a scratch space for auditioning via `?score=`; a file left there
-  will never deploy, and in production the page would fall back to the synth.
-- Trim and encode to the film rather than seeking into a full-length file. A
-  64 s cue at ~128 kbps is about 1 MB; this page already carries an 89 MB model.
+  never deploys, and in production the page would fall back to the synth.
+- Weight is the reason for trimming. The film's first load is 94 MB, of which the
+  model is 89 MB — the cue is 2 MB only because it was cut to length. The
+  untrimmed 2:40 source was 4.9 MB, and 96 of its 160 seconds could never play.
 
 Browsers do not start audio without a user gesture, so the transport's **Sound**
 control reads `Sound — click` in the accent colour until one arrives, and the
@@ -270,8 +302,10 @@ render hottest.
 ```
 film.html          page, styling, transport UI
 assets/film.js     the film: scene, lighting, timeline, captions, data playback
-assets/film-score.js  the cue: synthesised with Web Audio, or a supplied track,
+assets/film-score.js  the cue: a supplied track, or synthesised with Web Audio,
                      scheduled from the playhead so a scrub re-cues it
+assets/score.mp3   the shipped cue, trimmed to the film (licence above)
+tools/trim-mp3.mjs cuts an mp3 on frame boundaries — no re-encode, no ffmpeg
 assets/model-rig.js  measures any .glb — roles, order, explode, sensors, camera fit
 assets/three-lib.js  named re-exports of the three.js/GSAP already shipped in
                      assets/ScrollTrigger-n5D4SfYo.js
