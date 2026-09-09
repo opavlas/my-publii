@@ -34,6 +34,16 @@ Serving from the repo root instead works too — the URL just gains the prefix:
 | `film.html?t=21` | Freeze the film at t = 21 s |
 | `film.html?t=21&still=1` | Freeze *and* stop the render loop — one frame, for screenshots |
 | `film.html?t=0&shots=1` | Print every shot's solved camera and how much of the frame it fills |
+| `film.html?score=./music/x.mp3` | Audition an audio file in place of the synthesised cue |
+| `film.html?score-at=45` | Start that file 45 s in — which stretch plays under the picture |
+
+**`&still=1` does not screenshot in headless Chrome.** It stops the render loop
+after one frame, and the compositor never samples the WebGL canvas, so the
+capture comes back as an empty scene with the captions drawn over it — which
+looks exactly like a model that failed to load. Drop `still=1` and screenshot
+`?t=21` alone: the loop keeps rendering and the canvas composites. Headless also
+needs `--use-angle=swiftshader --enable-unsafe-swiftshader`, and *not*
+`--disable-gpu`, which kills the canvas outright.
 
 `&shots=1` is the fastest way to check framing after changing a model or a shot,
 and it needs no eyeballing:
@@ -152,6 +162,61 @@ the frame, which is why a shot may land below its requested `fill`.
 **Timings** — shots are absolute (`t`, `d`). Three other constants must move with
 them if you retime: `HIDE_FROM` / `HIDE_TO` (when only the detector layers are on
 screen — this drops ~2900 of 3600 draw calls) and `LABELS_FROM` / `LABELS_TO`.
+A fourth lives in `assets/film-score.js` — see below.
+
+**Materials** — the four housing shells (`cover`, `frame`, `base`) all arrive on
+one CAD material called `AluminumPolished` whose numbers are not aluminium:
+metalness 0.45 at roughness 0 is a half-dielectric mirror, and it renders as flat
+beige plastic. `ALUMINIUM` in `film.js` retargets it to the real thing. Two
+consequences if you tune it:
+
+- A fully metallic surface has **no diffuse response** — it can only show
+  reflections. So the shells get their own `HOUSING_ENV`, brighter than
+  `scene.environment`; raising the scene one instead would relight every board's
+  diffuse IBL and change the whole film.
+- The sources in that map sit on its **equator**, not its pole. The model is
+  Z-up but an equirect is sampled Y-up, so "above the instrument" (world +Z) is
+  `u = 0.75` — x = 192, y = 64. A normal top-to-bottom sky gradient lights this
+  model sideways.
+
+Because metal takes no diffuse light, `applyLights()` also ramps the shells'
+`envMapIntensity` with `LIGHT_LEVEL` — otherwise the housing stays lit through
+the opening fade while everything else builds out of black.
+
+---
+
+## The score
+
+`assets/film-score.js`. No audio is downloaded: the default cue is synthesised
+with Web Audio — a tonic pedal, hymnal organ chords, a rising sixteenth-note
+ostinato, one long build.
+
+**It is driven by the film's playhead, never by wall-clock time.** A scrub is a
+seek, and a seek re-cues the organ rather than letting the music drift a few bars
+behind the picture. `SECTIONS` is the beat sheet — `[t, chord, dynamic, ostinato]`
+— and its times **are** the cut points in `SHOTS` / `CAPTIONS`. Retime a shot and
+the matching row must move with it, or the swell lands next to the cut instead of
+on it. Density carries the dynamic: quarters, then eighths, then sixteenths, plus
+an octave doubling once the storm is on screen.
+
+To use a real track instead, set `SCORE_FILE` in `film.js` to a path under
+`assets/`. It then plays in place of the synth, kept in sync through every pause,
+scrub and replay; if it fails to load the film falls back to the synth rather
+than going silent. `SCORE_OFFSET` picks *which* stretch of a long track plays
+under the 64 seconds — film second 0 becomes track second `SCORE_OFFSET`.
+
+Two things to know:
+
+- **This site publishes from git, so a committed track is a published track.**
+  Only audio you hold web rights to belongs in `assets/`. `3d/music/` is
+  gitignored as a scratch space for auditioning via `?score=`; a file left there
+  will never deploy, and in production the page would fall back to the synth.
+- Trim and encode to the film rather than seeking into a full-length file. A
+  64 s cue at ~128 kbps is about 1 MB; this page already carries an 89 MB model.
+
+Browsers do not start audio without a user gesture, so the transport's **Sound**
+control reads `Sound — click` in the accent colour until one arrives, and the
+first interaction anywhere on the page starts the cue.
 
 ---
 
@@ -199,6 +264,8 @@ render hottest.
 ```
 film.html          page, styling, transport UI
 assets/film.js     the film: scene, lighting, timeline, captions, data playback
+assets/film-score.js  the cue: synthesised with Web Audio, or a supplied track,
+                     scheduled from the playhead so a scrub re-cues it
 assets/model-rig.js  measures any .glb — roles, order, explode, sensors, camera fit
 assets/three-lib.js  named re-exports of the three.js/GSAP already shipped in
                      assets/ScrollTrigger-n5D4SfYo.js
