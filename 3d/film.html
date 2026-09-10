@@ -126,22 +126,6 @@
     #barwrap { width: min(300px, 60vw); height: 1px; background: #262626; }
     #bar { height: 1px; width: 0; background: var(--copper); transition: width .25s ease; }
 
-    /* The play gate. Hidden while loading; it replaces the progress bar and the
-       percentage once the model is in, so the last thing on the loading screen
-       is an invitation rather than a finished meter. */
-    #start {
-      display: none; align-items: center; gap: 14px;
-      padding: 15px 30px; border: 1px solid #2e2e2e; background: rgba(12,12,12,.55);
-      color: var(--muted); font-size: 11px; letter-spacing: 0.24em;
-    }
-    #start .tri {
-      width: 0; height: 0; border-left: 9px solid var(--copper);
-      border-top: 6px solid transparent; border-bottom: 6px solid transparent;
-    }
-    #start:hover, #start:focus-visible { border-color: var(--copper); color: var(--text); }
-    #loader.ready #start { display: flex; }
-    #loader.ready #barwrap, #loader.ready .status { display: none; }
-
     @media (max-width: 700px) {
       #captions { bottom: 16vh; }
       .label .txt { font-size: 9px; letter-spacing: 0.14em; }
@@ -171,10 +155,6 @@
     <div class="mark">HardPix</div>
     <div id="barwrap"><div id="bar"></div></div>
     <div class="status">Loading — <span id="pct">0</span>%</div>
-    <!-- Shown once the model is ready. No browser starts audio without a
-         gesture, so the film is gated on this click rather than autoplaying
-         mute: the viewer gets picture and score together from frame 0. -->
-    <button id="start"><span class="tri"></span>Play with sound</button>
   </div>
 
   <script type="module" src="./assets/film.js"></script>
