@@ -70,6 +70,18 @@ function paintSound() {
   ui.sound.setAttribute('aria-pressed', String(score.enabled))
   ui.sound.classList.toggle('armed', score.blocked)
 }
+// Whether audio is blocked is only discovered when a play attempt is refused,
+// which happens well after boot — so the control has to be derived every frame
+// like the captions and labels, not painted once. Without this the button sits
+// on a stale "Sound on" while the film plays silently, and the viewer is never
+// told that a click is all it wants.
+let lastSoundState = null
+function syncSound() {
+  const state = (score.enabled ? 1 : 0) + '|' + (score.blocked ? 1 : 0)
+  if (state === lastSoundState) return
+  lastSoundState = state
+  paintSound()
+}
 
 // ---------------------------------------------------------------- renderer
 const canvas = $('canvas')
@@ -838,6 +850,7 @@ function tick(now) {
     screens.forEach(s => s.upload())
   }
   if (master) score.update(master.time(), !ended && !master.paused())
+  syncSound()
   if (ended) controls.update()
   else applyCamera()
   positionLabels()

@@ -257,6 +257,20 @@ Browsers do not start audio without a user gesture, so the transport's **Sound**
 control reads `Sound — click` in the accent colour until one arrives, and the
 first interaction anywhere on the page starts the cue.
 
+**Headless Chrome allows autoplay, so audio gating is invisible in testing.** A
+blocked-audio bug shipped precisely this way: every headless check reported
+`Sound on` and a healthy media pipeline, because nothing was ever blocked. To
+reproduce what a viewer actually gets, pass `--autoplay-policy=user-gesture-required`.
+Two things that matter once you do:
+
+- Chrome gates media on **sticky** activation, not transient. After any click
+  anywhere, a `play()` from `requestAnimationFrame` succeeds — so "it plays after
+  a click" does not prove the gesture handling is right.
+- Whether audio is blocked is only learned when a `play()` is refused, which is
+  long after boot. `blocked` therefore has to be re-read every frame
+  (`syncSound()`), not painted once, or the control sits on a stale `Sound on`
+  over a silent film and never tells the viewer to click.
+
 ---
 
 ## The detector data

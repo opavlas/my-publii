@@ -106,6 +106,22 @@ export function createScore({ file = '', volume = 0.55, offset = 0 } = {}) {
   let wanted = false             // what the viewer asked for
   let running = false            // the scheduler is cued and following the playhead
   let secIdx = 0, arpIdx = 0, lastT = -99
+  let fileBlocked = false        // play() was refused for want of a user gesture
+  let lastPlaying = false        // was the film running at the last update()
+
+  /**
+   * Start the track and remember whether the browser allowed it.
+   *
+   * This MUST be reachable synchronously from a user-gesture handler. A play()
+   * issued from requestAnimationFrame is outside the gesture context and Chrome
+   * rejects it, so calling it only from update() means the audio can never
+   * start however often the viewer clicks.
+   */
+  function tryPlayFile() {
+    if (!el) return
+    const p = el.play()
+    if (p && p.then) p.then(() => { fileBlocked = false }).catch(() => { fileBlocked = true })
+  }
 
   function ensure() {
     if (ctx || mode !== 'synth') return
@@ -277,8 +293,15 @@ export function createScore({ file = '', volume = 0.55, offset = 0 } = {}) {
   return {
     get source() { return mode },
     get enabled() { return wanted },
-    /** True when the viewer asked for sound but the browser has not let it start. */
-    get blocked() { return wanted && mode === 'synth' && !!ctx && ctx.state !== 'running' },
+    /** True when the viewer asked for sound but the browser has not let it start.
+     *  Both sources can be blocked, and the control has to say so for either —
+     *  reporting only the synth left a file-scored film showing "Sound on" while
+     *  silent, with nothing to tell the viewer that a click would fix it. */
+    get blocked() {
+      if (!wanted) return false
+      if (mode === 'file') return fileBlocked
+      return !!ctx && ctx.state !== 'running'
+    },
 
     /** Turn the score on or off. Resolves to whether audio is actually running. */
     async enable(on) {
@@ -298,7 +321,9 @@ export function createScore({ file = '', volume = 0.55, offset = 0 } = {}) {
     /** Call from any user gesture — browsers only start audio from one. */
     arm() {
       if (!wanted) return
-      if (mode === 'file') { ensureFile(); return }
+      // This call is inside the gesture handler — the one moment a browser will
+      // let audio start. update() runs from rAF and is too late.
+      if (mode === 'file') { ensureFile(); if (lastPlaying) tryPlayFile(); return }
       ensure()
       if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {})
     },
@@ -308,6 +333,7 @@ export function createScore({ file = '', volume = 0.55, offset = 0 } = {}) {
       if (!wanted) return
       if (mode === 'file') {
         if (!el) return
+        lastPlaying = playing
         if (!playing) { if (!el.paused) el.pause(); lastT = t; return }
         // A track is almost never the length of the film, so `offset` chooses
         // WHICH stretch of it plays under the picture: film second 0 is track
@@ -315,7 +341,7 @@ export function createScore({ file = '', volume = 0.55, offset = 0 } = {}) {
         const trackT = t + offset
         if (Math.abs(el.currentTime - trackT) > 0.25) { try { el.currentTime = trackT } catch (e) {} }
         el.volume = vol * envelope(t)
-        if (el.paused) el.play().catch(() => {})
+        if (el.paused) tryPlayFile()
         lastT = t
         return
       }
