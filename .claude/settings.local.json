@@ -3,7 +3,18 @@
     "allow": [
       "Bash(npx --yes serve . -p 3000)",
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3000)",
-      "Bash(python -m http.server 3000)"
+      "Bash(python -m http.server 3000)",
+      "Bash(grep -o 'class.\\\\{0,8\\\\}corner.\\\\{0,80\\\\}' function/czech-word-clock.html)",
+      "Bash(python3 -c ' *)",
+      "Bash(python3)",
+      "Bash(ls function/*.bak 2>/dev/null && rm -f function/*.bak; ls function/)",
+      "Bash(grep -o 'max-width: 760px.\\\\{0,260\\\\}' function/czech-word-clock.html)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)"
+    ],
+    "additionalDirectories": [
+      "C:\\Users\\pavlaond\\01_main\\01_work\\GIT\\Github\\my-publii\\function"
     ]
   }
 }

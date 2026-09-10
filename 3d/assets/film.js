@@ -1,4 +1,4 @@
-// HardPix2 — "Fourteen Millimetres"
+// HardPix2 — the product film
 // A ~64-second real-time product film. Plays once, then hands the model over to
 // the viewer. three.js + GSAP come from the chunk the /3d/ pages already ship
 // (see three-lib.js), so this page adds no new library bytes.

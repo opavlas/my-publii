@@ -1,4 +1,4 @@
-// HardPix2 — "Fourteen Millimetres": the score.
+// HardPix2 — the film's score.
 //
 // The brief was Hans Zimmer's Interstellar main theme. That recording is
 // licensed material this repo cannot ship, so the page SYNTHESISES an original
