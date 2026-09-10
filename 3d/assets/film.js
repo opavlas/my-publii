@@ -675,7 +675,9 @@ function setLabels(on) {
   labelEls.forEach((l, i) => {
     l.el.style.transitionDelay = on ? (i * 0.09) + 's' : '0s'
     l.el.classList.toggle('in', on)
+    if (on) { l.cx = undefined; l.cy = undefined }   // snap into place, don't glide in
   })
+  if (on) measureLabels()
 }
 function syncLabels(t) {
   const on = t >= LABELS_FROM && t < LABELS_TO
@@ -811,24 +813,75 @@ function buildTimeline() {
 
 // ---------------------------------------------------------------- labels
 const _v = new Vector3(), _c = new Vector3()
+// Measured once per appearance rather than assumed: the label box drives both the
+// right-edge reserve and the minimum spacing, and it changes with the viewport
+// (the narrow breakpoint drops the sub-line entirely).
+let labelBox = { w: 200, h: 30 }
+function measureLabels() {
+  let mw = 0, mh = 0
+  for (const l of labelEls) {
+    mw = Math.max(mw, l.el.offsetWidth)
+    mh = Math.max(mh, l.el.offsetHeight)
+  }
+  if (mw) labelBox = { w: mw, h: mh }
+}
+
 function positionLabels() {
   if (!ui.labels.classList.contains('on')) return
   const w = window.innerWidth, h = window.innerHeight
-  labelEls.forEach(l => {
+  // Reserve the label's real width, not a fixed 220px. On a 360px phone that
+  // constant was most of the screen, so every label pinned to the same clamp.
+  const reserve = Math.min(labelBox.w + 22, w * 0.62)
+
+  const live = []
+  for (const l of labelEls) {
     const p = l.part
     _v.copy(p.centre); _v.z += p.wrap.position.z
     _v.project(camera)
-    const y = (-_v.y * 0.5 + 0.5) * h
+    const behind = _v.z > 1
+    // Written only on change: assigning opacity every frame restarts the CSS
+    // transition, which is what made a label sitting near the camera plane pulse.
+    if (behind !== l.behind) { l.behind = behind; l.el.style.opacity = behind ? '0' : '' }
+    if (behind) continue
     let right = -Infinity
     for (const c of p.corners) {
       _c.copy(c); _c.z += p.wrap.position.z; _c.project(camera)
       const cx = (_c.x * 0.5 + 0.5) * w
       if (cx > right) right = cx
     }
-    const x = Math.min(w - 220, Math.max((_v.x * 0.5 + 0.5) * w, right) + 14)
-    l.el.style.transform = 'translate(' + Math.round(x) + 'px,' + Math.round(y - 11) + 'px)'
-    l.el.style.opacity = _v.z > 1 ? 0 : ''
-  })
+    l.tx = Math.min(w - reserve, Math.max((_v.x * 0.5 + 0.5) * w, right) + 14)
+    l.ty = (-_v.y * 0.5 + 0.5) * h - labelBox.h / 2
+    live.push(l)
+  }
+
+  // Push overlapping leaders apart, keeping stack order. Every shell shares the
+  // same 86 x 41 footprint, so on a short viewport the eight layers project into
+  // a few hundred pixels and the labels land on top of one another.
+  live.sort((a, b) => a.ty - b.ty)
+  const gap = labelBox.h + 4
+  for (let i = 1; i < live.length; i++) {
+    if (live[i].ty - live[i - 1].ty < gap) live[i].ty = live[i - 1].ty + gap
+  }
+  const last = live[live.length - 1]
+  if (last && last.ty + labelBox.h > h - 8) {
+    const shift = last.ty + labelBox.h - (h - 8)
+    for (const l of live) l.ty -= shift
+  }
+  if (live[0] && live[0].ty < 8) {
+    const shift = 8 - live[0].ty
+    for (const l of live) l.ty += shift
+  }
+
+  // Ease toward the target and keep sub-pixel precision. Rounding a slowly
+  // tweening position produced 1px stair-stepping, and the de-overlap pass above
+  // can move a label discontinuously when the sort order changes; easing absorbs
+  // both instead of showing them as a twitch.
+  for (const l of live) {
+    if (l.cx === undefined) { l.cx = l.tx; l.cy = l.ty }
+    l.cx += (l.tx - l.cx) * 0.25
+    l.cy += (l.ty - l.cy) * 0.25
+    l.el.style.transform = 'translate3d(' + l.cx.toFixed(1) + 'px,' + l.cy.toFixed(1) + 'px,0)'
+  }
 }
 
 // ---------------------------------------------------------------- playback ui

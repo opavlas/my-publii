@@ -137,6 +137,23 @@
       #captions { bottom: 16vh; }
       .label .txt { font-size: 9px; letter-spacing: 0.14em; }
     }
+    /* On a phone the eight exploded layers project into a few hundred pixels, so
+       every label's height is competing for the same space. The sub-line is the
+       first thing to go — the part name is what the leader is pointing at, and
+       the detail is repeated in the caption underneath anyway. */
+    @media (max-width: 560px) {
+      .label .det { display: none; }
+      .label { gap: 6px; }
+      .label .rule { width: 14px; }
+      /* At this width the instrument fills the frame, so a leader has nowhere to
+         sit but on the metal — and the shells are nearly white. The label is
+         already as far right as it fits, so legibility has to come from the
+         shadow rather than from moving it. */
+      .label .txt {
+        letter-spacing: 0.10em;
+        text-shadow: 0 1px 2px #000, 0 0 5px rgba(0,0,0,.98), 0 0 12px rgba(0,0,0,.92);
+      }
+    }
   </style>
 </head>
 <body>
