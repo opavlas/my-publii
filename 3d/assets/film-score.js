@@ -106,21 +106,25 @@ export function createScore({ file = '', volume = 0.55, offset = 0 } = {}) {
   let wanted = false             // what the viewer asked for
   let running = false            // the scheduler is cued and following the playhead
   let secIdx = 0, arpIdx = 0, lastT = -99
-  let fileBlocked = false        // play() was refused for want of a user gesture
+  let playPending = false        // a play() promise is in flight
   let lastPlaying = false        // was the film running at the last update()
 
   /**
-   * Start the track and remember whether the browser allowed it.
+   * Ask the element to play, at most one attempt at a time.
    *
-   * This MUST be reachable synchronously from a user-gesture handler. A play()
-   * issued from requestAnimationFrame is outside the gesture context and Chrome
-   * rejects it, so calling it only from update() means the audio can never
-   * start however often the viewer clicks.
+   * The guard matters: update() runs every frame, so without it a blocked
+   * element accumulates a promise per frame, and their rejections resolve out of
+   * order against any later success. Bookkeeping "was it refused?" from those
+   * callbacks is unreliable for exactly that reason — see `blocked`, which reads
+   * the element instead.
    */
   function tryPlayFile() {
-    if (!el) return
+    if (!el || playPending) return
     const p = el.play()
-    if (p && p.then) p.then(() => { fileBlocked = false }).catch(() => { fileBlocked = true })
+    if (p && p.then) {
+      playPending = true
+      p.then(() => { playPending = false }).catch(() => { playPending = false })
+    }
   }
 
   function ensure() {
@@ -299,7 +303,11 @@ export function createScore({ file = '', volume = 0.55, offset = 0 } = {}) {
      *  silent, with nothing to tell the viewer that a click would fix it. */
     get blocked() {
       if (!wanted) return false
-      if (mode === 'file') return fileBlocked
+      // Ground truth, not bookkeeping: the film is running but the element is
+      // not. That is exactly the state the viewer needs told about, and unlike a
+      // flag set from play() callbacks it cannot be left stale by promises
+      // resolving out of order.
+      if (mode === 'file') return !!el && lastPlaying && el.paused
       return !!ctx && ctx.state !== 'running'
     },
 
@@ -334,7 +342,10 @@ export function createScore({ file = '', volume = 0.55, offset = 0 } = {}) {
       if (mode === 'file') {
         if (!el) return
         lastPlaying = playing
-        if (!playing) { if (!el.paused) el.pause(); lastT = t; return }
+        // pause() aborts any play() still in flight, so the guard has to clear
+        // with it — otherwise the next resume is skipped as a duplicate attempt
+        // and the track never restarts.
+        if (!playing) { if (!el.paused) { el.pause(); playPending = false } lastT = t; return }
         // A track is almost never the length of the film, so `offset` chooses
         // WHICH stretch of it plays under the picture: film second 0 is track
         // second `offset`. The fade below stays keyed to film time either way.
@@ -354,7 +365,7 @@ export function createScore({ file = '', volume = 0.55, offset = 0 } = {}) {
 
     /** The film restarted or ended — drop everything still in flight. */
     reset() {
-      if (el) { el.pause(); try { el.currentTime = offset } catch (e) {} }
+      if (el) { el.pause(); playPending = false; try { el.currentTime = offset } catch (e) {} }
       if (ctx) panic()
       lastT = -99
     },

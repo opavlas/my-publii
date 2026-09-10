@@ -58,6 +58,7 @@ const ui = {
   capMain: $('cap-main'), capSub: $('cap-sub'), labels: $('labels'), capWrap: $('captions'),
   scrub: $('scrub'), played: $('played'), replay: $('replay'), hint: $('hint'),
   playpause: $('playpause'), posterBtn: $('poster-play'), sound: $('sound'),
+  start: $('start'),
 }
 
 // ---------------------------------------------------------------- score
@@ -880,13 +881,13 @@ window.addEventListener('resize', () => {
     renderer.render(scene, camera)                 // compile shaders before the reveal
     last = performance.now()
     tick(last)
-    ui.loader.classList.add('gone')
 
     const params = new URLSearchParams(location.search)
     const seek = params.get('t')
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     if (seek !== null) {
       // ?t=12.5 freezes the film at that second, for reviewing shots
+      ui.loader.classList.add('gone')
       master.pause()
       master.time(parseFloat(seek) || 0)
       lastSyncTime = -99
@@ -905,16 +906,32 @@ window.addEventListener('resize', () => {
       // check that does not depend on being able to look at a render
       if (params.has('shots')) console.log('FILM shots' + '\n' + reportShots())
     } else {
-      // The film IS this page's content, so prefers-reduced-motion does not
-      // suppress it (the same reasoning as a video player) — the transport is
-      // shown up front instead so pausing is one click away.
-      ui.stage.classList.add('intro')
-      setTimeout(() => ui.stage.classList.remove('intro'), 3600)
-      setTimeout(play, reduced ? 120 : 350)
-      // Sound is wanted from the start, but no browser will start audio without
-      // a gesture, so the button reads "Sound — click" until one arrives and the
-      // first interaction anywhere on the page starts the cue.
-      score.enable(true).then(paintSound)
+      // The film is GATED on one click rather than autoplayed.
+      //
+      // Audible autoplay is refused by every current browser, so an ungated film
+      // plays its opening — the build out of black, the title, the push in —
+      // under no music at all, and the score only ever joins late, if the viewer
+      // happens to click. Gating costs one click at the end of a load the viewer
+      // already sat through, and buys picture and score starting together on
+      // frame 0, which is how the cue is written. That click is also the gesture
+      // that unlocks the audio, so it does two jobs at once.
+      //
+      // prefers-reduced-motion does not suppress the film — it IS this page's
+      // content, the same reasoning as a video player — but the transport is
+      // shown up front so pausing is one click away.
+      ui.loader.classList.add('ready')
+      ui.start.focus({ preventScroll: true })
+      const begin = async () => {
+        ui.start.removeEventListener('click', begin)
+        await score.enable(true)          // in the gesture: this is what unblocks audio
+        score.arm()
+        paintSound()
+        ui.loader.classList.add('gone')
+        ui.stage.classList.add('intro')
+        setTimeout(() => ui.stage.classList.remove('intro'), 3600)
+        setTimeout(play, reduced ? 60 : 180)   // let the loader fade start first
+      }
+      ui.start.addEventListener('click', begin)
     }
   } catch (err) {
     ui.pct.textContent = '—'
