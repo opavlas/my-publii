@@ -19,7 +19,7 @@ import {
 } from './model-rig.js'
 import { createScore } from './film-score.js'
 
-const MODEL_FILE = './HardPix2_TPX2.glb'
+const MODEL_FILE = './HardPix2_TPX2_nano.glb'
 
 // The score. Anything set here is served from this repo to every visitor, so
 // only a track you hold publication rights to belongs in it — audition anything

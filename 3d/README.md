@@ -6,7 +6,7 @@ own index:
 | Page | What it is | Model |
 |---|---|---|
 | `index.html` | **Entry point.** Links the three below. Static and instant — it deliberately loads no model | — |
-| `film.html` | **The product film.** 64 s, plays once, then hands the model to the viewer | `HardPix2_TPX2.glb` |
+| `film.html` | **The product film.** 64 s, plays once, then hands the model to the viewer | `HardPix2_TPX2_nano.glb` |
 | `hardpix.html` | Scroll-driven exploded view (older, see *Known bugs*) | `HardPix_SWIMMR.glb` |
 | `assembly.html` | Scroll-driven exploded view of an earlier assembly | `t2m_assembly.glb` |
 
@@ -68,16 +68,17 @@ This is the main thing the film was built to survive. **Change one line** in
 `assets/film.js`:
 
 ```js
-const MODEL_FILE = './HardPix2_TPX2.glb'
+const MODEL_FILE = './HardPix2_TPX2_nano.glb'
 ```
 
 Then open the page with the console visible. On boot it prints exactly what it
 detected — check this before anything else:
 
 ```
-FILM model: ./HardPix2_TPX2.glb
-#0 HARD-PIX-COVER1              role=cover       label="Cover"                 z= 0.362  86.0×41.0×5.2mm
-#2 HardPix_Timepix2_TOP1        role=detector    label="Upper detector module" z= 0.210  34.1×35.0×6.3mm
+FILM model: ./HardPix2_TPX2_nano.glb
+#0 HARD-PIX-COVER1              role=cover       label="Cover"                 z= 0.446  86.0×41.0×5.2mm
+#2 HardPix_Timepix2_TOP1        role=detector    label="Upper detector module" z= 0.259  34.1×35.0×6.3mm
+#4 HardPix_central_v3_nano-d91  role=frame       label="Lower frame"           z=-0.119  86.0×41.0×12.4mm
 ...
 FILM sensor[0] HardPix_Timepix2_TOP1 -> Solid82 14.08×14.14×0.01mm
 ```
@@ -118,8 +119,8 @@ Both models resolve correctly:
 
 | Model | Die | Size |
 |---|---|---|
-| `HardPix2_TPX2` upper | `Solid82` | 14.080 × 14.140 × 0.010 mm |
-| `HardPix2_TPX2` lower | `Solid82_1` | 14.080 × 14.140 × 0.010 mm |
+| `HardPix2_TPX2_nano` upper | `Solid82` | 14.080 × 14.140 × 0.010 mm |
+| `HardPix2_TPX2_nano` lower | `Solid82_1` | 14.080 × 14.140 × 0.010 mm |
 | `HardPix_SWIMMR` | `Solid568_2` | 16.000 × 14.000 × 1.001 mm |
 
 HardPix2's CAD models the *sensitive layer* as its own thin plate, so the data
@@ -355,9 +356,15 @@ Found while building the film; all four are real and none are fixed:
 
 ## Performance and weight
 
-`HardPix2_TPX2.glb` is **88.9 MB / 2.97 M triangles** (3.30 M drawn, 3,618 draw
-calls). `Hardpix_Ultrascale_784_2mm` alone is ~91% of the geometry. Shots 5–8
-hide everything but the detector layers, which is where the budget is won.
+`HardPix2_TPX2_nano.glb` is **89.2 MB / 2.98 M triangles**.
+`Hardpix_Ultrascale_784_2mm` alone is ~3.01 M of that geometry — the overwhelming
+majority. Shots 5–8 hide everything but the detector layers, which is where the
+budget is won.
+
+Note the name: **nano is not a lighter model.** It is 89.2 MB against the previous
+revision's 88.9 MB — a different instrument (UART comms instead of Ethernet, a
+deeper lower frame), not a smaller one. The earlier `HardPix2_TPX2.glb` is still
+in the tree and in history; nothing loads it.
 
 Not yet done, in rough order of value:
 

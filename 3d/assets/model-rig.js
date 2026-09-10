@@ -22,7 +22,12 @@ const ROLE_RULES = [
   { role: 'processing', re: /zynq|ultrascale|ultra[_-]?scale|fpga|soc|cpu|proc/i },
   { role: 'cover', re: /cover|lid/i },
   { role: 'base', re: /bottom|base|floor/i },
-  { role: 'frame', re: /middle|frame|spacer/i },
+  // "central" is here for the nano revision, whose lower shell is called
+  // HardPix_central_v3_nano-d9 — dimensionally the same 86 x 41 x 12.4 mm part
+  // the earlier model called HARD-PIX-MIDDLE-TOP. Without it the shell falls to
+  // 'unknown', which costs it both its label and the aluminium treatment, so it
+  // renders in raw CAD material beside three metal shells.
+  { role: 'frame', re: /middle|frame|spacer|central/i },
 ]
 
 const ROLE_LABEL = {
