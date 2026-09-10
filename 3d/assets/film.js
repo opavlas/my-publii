@@ -181,7 +181,14 @@ function buildHousingEnvironment() {
 }
 const HOUSING_ENV = buildHousingEnvironment()
 
-const camera = new PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.02, 3000)
+// The near plane is the depth buffer's precision budget. These shells MATE — the
+// cover's underside sits exactly on the frame — so as the stack reassembles their
+// faces become coplanar, and coplanar faces z-fight when the depth range is
+// stretched too thin. At near 0.02 against far 3000 the ratio was 1:150,000; the
+// closest shot only ever gets ~1.25 units from its subject, so 0.02 bought
+// nothing and cost precision everywhere. controls.minDistance keeps the viewer
+// from pushing geometry through the raised plane once the film hands over.
+const camera = new PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.15, 2400)
 camera.up.set(0, 0, 1)                // the model is Z-up
 
 const ambient = new AmbientLight(0x404048, 0.30)
@@ -490,6 +497,8 @@ function build(gltf, moonTex) {
   controls.dampingFactor = 0.06
   controls.enablePan = false
   controls.enabled = false
+  controls.minDistance = 0.5        // stay clear of the near plane above
+  controls.maxDistance = 40
   controls.target.set(0, 0, 0)
 
   parts.forEach(p => {
@@ -668,6 +677,24 @@ function syncLabels(t) {
   lastLabels = on
   setLabels(on)
 }
+// The top shells only turn transparent for the closing beat. Derived, not fired:
+// a transparent material with depthWrite off is sorted per object every frame, so
+// leaving the flags set after a Replay or a backwards scrub makes the cover and
+// the upper frame swap draw order as the camera moves — visible as a flicker
+// between two aluminium parts, with nothing on screen explaining why.
+const GHOST_FROM = 57.0
+let lastGhost = null
+function syncGhost(t) {
+  const on = t >= GHOST_FROM
+  if (on === lastGhost) return
+  lastGhost = on
+  for (const m of ghostable) {
+    m.transparent = on
+    m.depthWrite = !on
+    if (!on) m.opacity = 1          // the tween owns it only while ghosting
+    m.needsUpdate = true
+  }
+}
 // A seek breaks the accumulating detector canvases, so rebuild for the beat we
 // landed in.
 function resyncData(t) {
@@ -699,6 +726,7 @@ function syncFilmState() {
   syncCaptions(t)
   syncVisibility(t)
   syncLabels(t)
+  syncGhost(t)
 }
 
 // ---------------------------------------------------------------- timeline
@@ -764,7 +792,11 @@ function buildTimeline() {
     tl.to(s.planes.glow.scale, { x: 3.4, y: 3.4, duration: 9.0, ease: 'power1.inOut' }, 50.5)
     tl.to(s.planes.glow.material, { opacity: 0.95, duration: 9.0, ease: 'power1.inOut' }, 50.5)
   })
-  tl.call(() => ghostable.forEach(m => { m.transparent = true; m.depthWrite = false }), null, 57.0)
+  // Only the opacity is tweened here. Whether the shells are transparent AT ALL
+  // is derived from the playhead in syncGhost() — a tl.call() cannot do it,
+  // because GSAP suppresses callbacks on a backwards seek and the flags would
+  // survive a Replay or a scrub, leaving two aluminium shells permanently
+  // depth-writeless and flickering against each other.
   ghostable.forEach(m => tl.to(m, { opacity: 0.12, duration: 1.6, ease: 'power2.inOut' }, 57.2))
 
   tl.set({}, {}, 64)
@@ -821,7 +853,7 @@ function play() {
   screens.forEach(s => { s.clear(); s.rate = 0 })
   hero.progress = 0; hero.shown = 0
   resyncData(0)
-  ghostable.forEach(m => { m.opacity = 1 })
+  lastGhost = null                 // force syncGhost to restore the shells
   screens.forEach(s => {
     if (!s.planes) return
     s.planes.glow.scale.set(1, 1, 1)
