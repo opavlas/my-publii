@@ -77,6 +77,10 @@
     }
     #stage:hover #transport, #stage.ended #transport, #stage.paused #transport,
     #stage.intro #transport { opacity: 1; }
+    /* While the browser is holding the score back, the transport STAYS up. The
+       hint is useless if it hides after the intro — and on a touch screen there
+       is no hover to bring it back, so it would never be seen at all. */
+    #stage.soundblocked #transport { opacity: 1; }
 
     /* big play affordance when the film is parked (reduced motion, or paused) */
     #poster-play {
@@ -103,8 +107,11 @@
     }
     button:hover { color: var(--text); letter-spacing: 0.26em; }
     /* audio cannot start until the viewer touches the page, so while the score
-       is waiting on that gesture the control says so in the accent colour */
-    #sound.armed { color: var(--copper); }
+       is waiting on that gesture the control says so in the accent colour, and
+       breathes so the eye finds it against a moving film */
+    #sound.armed { color: var(--copper); animation: soundwait 2.4s ease-in-out infinite; }
+    @keyframes soundwait { 0%, 100% { opacity: 1; } 50% { opacity: 0.42; } }
+    @media (prefers-reduced-motion: reduce) { #sound.armed { animation: none; } }
     #hint {
       position: absolute; left: 50%; bottom: 4.5rem; transform: translateX(-50%);
       font-size: 10px; text-transform: uppercase; letter-spacing: 0.22em; color: var(--dim);

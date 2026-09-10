@@ -65,10 +65,17 @@ const score = createScore({
   file: new URLSearchParams(location.search).get('score') || SCORE_FILE,
   offset: parseFloat(new URLSearchParams(location.search).get('score-at')) || SCORE_OFFSET,
 })
+// How late a first gesture can arrive and still be worth restarting for. The cue
+// is written against the cut, so joining it three seconds in loses the opening;
+// past this the restart would cost more than the sync is worth.
+const SOUND_RESTART_WINDOW = 8
+
 function paintSound() {
   ui.sound.textContent = score.enabled ? (score.blocked ? 'Sound — click' : 'Sound on') : 'Sound off'
   ui.sound.setAttribute('aria-pressed', String(score.enabled))
   ui.sound.classList.toggle('armed', score.blocked)
+  // Holds the transport open while the score waits on a gesture — see the CSS.
+  ui.stage.classList.toggle('soundblocked', score.blocked)
 }
 // Whether audio is blocked is only discovered when a play attempt is refused,
 // which happens well after boot — so the control has to be derived every frame
@@ -967,10 +974,22 @@ ui.sound.addEventListener('click', async () => {
 // Any first interaction unblocks the audio the page already asked for. Once the
 // viewer has used the Sound button themselves, score.enabled carries their
 // choice and arm() respects it.
-;['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => {
+let firstGesture = true
+;['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, e => {
+  const wasBlocked = score.blocked
   score.arm()
+  // The first gesture is the one that unblocks audio. If it lands while the film
+  // has barely started, run it again from the top so the cue and the picture go
+  // together — the alternative is a film whose opening is silent every time.
+  // A click aimed at the transport is never hijacked: pausing should pause.
+  const onTransport = e.target && e.target.closest && e.target.closest('#transport')
+  if (firstGesture && wasBlocked && !onTransport && master && !ended &&
+      master.time() < SOUND_RESTART_WINDOW) {
+    play()
+  }
+  firstGesture = false
   paintSound()
-  setTimeout(paintSound, 150)      // ctx.resume() settles a beat after the gesture
+  setTimeout(paintSound, 150)      // resume()/play() settle a beat after the gesture
 }, { passive: true }))
 ui.scrub.addEventListener('click', e => {
   if (!master) return
