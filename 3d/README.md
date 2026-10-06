@@ -42,14 +42,25 @@ Serving from the repo root instead works too — the URL just gains the prefix:
 | `film.html?t=0&shots=1` | Print every shot's solved camera and how much of the frame it fills |
 | `film.html?score=./music/x.mp3` | Audition an audio file in place of the synthesised cue |
 | `film.html?score-at=45` | Start that file 45 s in — which stretch plays under the picture |
+| `film.html?render=1` | Hand the clock to `tools/render-film.mjs` — see *Rendering the film to video* |
 
-**`&still=1` does not screenshot in headless Chrome.** It stops the render loop
-after one frame, and the compositor never samples the WebGL canvas, so the
-capture comes back as an empty scene with the captions drawn over it — which
-looks exactly like a model that failed to load. Drop `still=1` and screenshot
-`?t=21` alone: the loop keeps rendering and the canvas composites. Headless also
-needs `--use-angle=swiftshader --enable-unsafe-swiftshader`, and *not*
-`--disable-gpu`, which kills the canvas outright.
+**Headless screenshots work, including with `&still=1`** — retested 2026-09-25
+against Chrome 140 on Windows with `--use-angle=d3d11 --ignore-gpu-blocklist`,
+which reports `ANGLE (AMD … Direct3D11)`, i.e. the real GPU, not a software
+fallback. `?t=21&still=1` composites the full exploded stack. An earlier note
+here said this came back as an empty scene and that headless needed
+`--use-angle=swiftshader --enable-unsafe-swiftshader`; that is no longer the
+case, and SwiftShader is now only worth reaching for on a machine with no
+usable GPU, where it is perhaps fifty times slower. `--disable-gpu` still kills
+the canvas outright — do not pass it.
+
+What `&still=1` *does* still get wrong is timing, and it is worth knowing why
+before trusting one as a reference frame: it stops the loop on the frame it
+lands on, so any CSS transition that began on that frame — a caption fading in,
+the leader labels staggering — is frozen part-way through. The still is honest
+about the geometry and the lighting, and misleading about the captions. For a
+frame with its transitions settled, use `tools/render-film.mjs --probe 21`,
+which steps the film there properly.
 
 `&shots=1` is the fastest way to check framing after changing a model or a shot,
 and it needs no eyeballing:
@@ -146,6 +157,24 @@ All in `assets/film.js`.
 `{ t, until, main, sub, top }`; `top` puts it at the top of frame (used while the
 exploded stack fills the middle). They are *derived from the playhead every
 frame*, never fired as callbacks — see the GSAP note below.
+
+A `sub` line is capped at `max-width: 62ch` so it wraps to two balanced lines
+rather than running the width of the frame, and **the cap is tight enough to
+orphan a word**. The closing caption does it today: *"Falcon 9 · a D-Orbit ION
+spacecraft · UKRI SWIMMR-1"* wants 436 px against a 430.2 px cap, so it breaks
+at the hyphen and leaves the `1` alone on a 7 px second line. Found while
+rendering the video; unfixed, because widening the cap also moves the break in
+the *Institute of Experimental and Applied Physics* caption and that is a
+typographic call, not a bug fix. It reproduces at every viewport width and every
+device pixel ratio — so it is on the live page, not an artefact of the render.
+Measure a `sub` line before trusting it, since a block element's own
+`getClientRects()` always returns one rect no matter how many lines it drew:
+
+```js
+const e = document.getElementById('cap-sub')
+const r = document.createRange(); r.selectNodeContents(e)
+;[...r.getClientRects()].map(x => Math.round(x.width))   // [429, 7] ← orphan
+```
 
 **Shots** — the `SHOTS` array. Each is a framing *intent*, not a coordinate:
 
@@ -273,6 +302,148 @@ Two things that matter once you do:
 
 ---
 
+## Rendering the film to video
+
+The film is a web page and that is its primary form — but a file is what you
+send to a conference, a funder or a journalist. `tools/render-film.mjs` produces
+one at 4K.
+
+```sh
+cd 3d/tools
+npm install --no-save puppeteer-core ffmpeg-static    # once
+node render-film.mjs
+```
+
+Output: `3d/out/hardpix-film-2160p60.mp4` — 3840×2160, 3840 frames at 60 fps
+(exactly 64.000 s), H.264 High CRF 14, with `assets/score.mp3` under it.
+About 160 MB, and about 53 minutes on an AMD integrated GPU at 0.8 s/frame.
+`3d/out/` is gitignored: **this site is published from git**, so a committed
+render is a published one, and a 160 MB binary cannot be taken back out of
+history afterwards.
+
+| Flag | What it does |
+|---|---|
+| `--probe 6,20,45` | Stills at those seconds, stepped to properly — for eyeballing |
+| `--trace 23.5` | Print caption and label opacity per frame — the timing check below |
+| `--to 300` | Render only the first 300 frames, for a quick end-to-end test |
+| `--crf 12` | Quality. 14 is the default and already transparent |
+| `--fps`, `--width`, `--height`, `--dpr` | Geometry, if you ever want 1080p or 30 fps |
+
+### Why it cannot just be a screen recording
+
+**The film is real time, and a 3840×2160 screenshot takes about 0.8 s to come
+back.** Between two captured frames the wall clock runs roughly fifty times
+further than film time. Anything the wall clock drives is therefore wrong by a
+factor of fifty, and there are three such things:
+
+1. **The GSAP playhead.** Handled by `?render=1` stepping `master.time(i/fps)`
+   itself, with the rAF loop stopped (`stillMode`). The `tl.call()` beats at
+   34.8 / 42 / 50.2 s still fire, because the playhead genuinely crosses them.
+2. **The detector simulation.** `screen.advance(dt)` integrates a fade and a
+   data playhead. Render mode passes a fixed `1/fps` instead of the measured
+   gap — not an approximation but a *better* integration than live playback,
+   which passes a jittery measured `dt` clamped at 0.05.
+3. **The CSS transitions**, and these are the ones that bite. The captions
+   (0.9 s) and the leader labels (0.55 s plus a 0.09 s per-label stagger) are
+   CSS, not GSAP — the timeline does not own them. Left alone, every fade would
+   have run to completion before the next frame was captured, and the film would
+   have read as a series of hard cuts with no fades in it at all.
+
+The fix for (3) is `seekTransitions()` in `film.js`: each frame it walks
+`document.getAnimations()`, remembers the film time at which each animation
+first appeared, and pins `currentTime` to the elapsed *film* time. A transition
+past its end is `finish()`ed rather than held paused — a stale paused effect
+keeps applying values that the next class change then has to fight, and
+`showLine()` toggles `in` off and on again within a single frame.
+
+Verify it after touching any caption, transition duration, or the label stagger:
+
+```
+node render-film.mjs --trace 23.5
+```
+
+```
+  t      cap-main  cap-sub  anims  caption
+  17.80    0.741    0.535     12   Two detector layers  labels[0.63 0.30 0.02 0.00 …]
+  17.90    0.852    0.713     12   Two detector layers  labels[0.84 0.66 0.34 0.04 …]
+  18.00    0.925    0.834     12   Two detector layers  labels[0.95 0.86 0.68 0.38 …]
+```
+
+Three things to read there: captions must climb over ~0.9 s of *film* time and
+not jump 0→1; the label column must show the staircase, which is the stagger;
+and `anims` must stay bounded — a number that climbs all render means finished
+transitions are leaking instead of retiring.
+
+### Why 1920×1080 at dpr 2, and not a 3840×2160 viewport
+
+Both give a 3840×2160 file. They do not give the same film. The page sizes its
+captions with `clamp(22px, 3.4vw, 44px)` and its label text at a fixed 10/9 px,
+so a literal 4K CSS viewport lays the film out for a wall: the instrument fills
+a 4K frame while the captions stay 44 px tall and the labels stay 10 px — about
+a quarter the size they are meant to read at. A 1080p layout rasterised at 2×
+is the same film the page has always been, at four times the pixels.
+
+`renderer.setPixelRatio(Math.min(devicePixelRatio, 2))` already does the right
+thing with this, giving a native 3840×2160 drawing buffer with MSAA. The
+viewport must be set **before** `goto()`, because `buildTimeline()` solves every
+shot against the viewport aspect once at boot and a later resize will not
+re-frame them.
+
+### Capture, and the black-canvas trap
+
+Render mode builds the renderer with `preserveDrawingBuffer: true` (off for
+visitors — it costs a copy per frame). Without it, an un-preserved WebGL buffer
+is cleared after the frame it was drawn in, so a capture that lands a beat late
+reads the canvas as black over a correct set of DOM captions — which looks
+exactly like a model that failed to load. `__film.frame()` additionally waits
+two rAFs before returning, so the compositor has picked the canvas up, with a
+250 ms timeout so a throttled headless page can never hang the render.
+
+### Audio
+
+Not played in the browser at all — a screenshot cannot capture sound. ffmpeg
+lays `assets/score.mp3` under the picture at offset 0 and reproduces the head
+and tail fade that `film-score.js`'s `envelope()` applies live (in over 1.2 s,
+out over 62.4→64 s), so the file sounds like the page. The page's `volume: 0.55`
+is deliberately *not* applied: that is a level chosen against a browser tab, and
+a video file's level belongs to the viewer's player. Measured output: peak
+−3.6 dB, mean −20.2 dB.
+
+### Encode settings, and why those
+
+`-c:v libx264 -preset slow -crf 14 -profile:v high -pix_fmt yuv420p` plus
+explicit `bt709` primaries/transfer/matrix.
+
+- **CRF 14** was measured, not guessed: encoding a probe frame and running
+  ffmpeg's `psnr` filter against the source PNG gives 54 dB luma / 60 dB chroma,
+  which is transparent. CRF 10 buys 2 dB for 80 % more bitrate.
+- **yuv420p, not 4:4:4 or 10-bit.** The source is an 8-bit RGB screenshot, so
+  10-bit adds nothing the capture did not already lose, and 4:4:4 loses hardware
+  decoding on most players for a difference invisible at 4K.
+- **Tag the colour.** An untagged 4K file gets guessed as bt2020 by some
+  players, and the copper accent (`#b8703a`) comes back orange-brown.
+- Frames run 0..3839, stopping one frame short of `t = 64`. The timeline ends on
+  `tl.set({}, {}, 64)`, and stepping *to* 64 fires `onComplete` → `onFilmEnd()`,
+  which hands the model to OrbitControls and raises the "Drag to explore" hint.
+
+### If 53 minutes is ever too slow
+
+It can be split across parallel browsers, because almost nothing in the film is
+path-dependent. Everything the timeline drives is absolute in `master.time(t)`,
+and `syncFilmState()` re-derives captions, visibility, labels and ghosting from
+the playhead. The only accumulating state is the two detector canvases, and
+`resyncData()` resets those completely at three known points — 34.8, 42.0 and
+50.2 s — while before 34.8 s they are simply empty (`rate` is 0 and nothing is
+painted). So chunks starting at 0, 34.8, 42.0 and 50.2 s are exact with no
+warm-up at all; a chunk starting anywhere inside 17.6–22.8 s needs to warm from
+17.6 so the leader labels' eased positions settle. Encode each chunk with
+identical settings and concatenate.
+
+This was deliberately not done for the first render: a seam is invisible in
+testing and obvious in the finished film, and an hour is cheap.
+
+---
+
 ## The detector data
 
 `data/hits.bin` — 13,230 one-second exposures, 379,183 hits, 1.5 MB (0.86 MB
@@ -321,6 +492,8 @@ assets/film-score.js  the cue: a supplied track, or synthesised with Web Audio,
                      scheduled from the playhead so a scrub re-cues it
 assets/score.mp3   the shipped cue, trimmed to the film (licence above)
 tools/trim-mp3.mjs cuts an mp3 on frame boundaries — no re-encode, no ffmpeg
+tools/render-film.mjs  renders the film to a 4K video — drives film.js?render=1
+                     one frame at a time and muxes the score (see above)
 assets/model-rig.js  measures any .glb — roles, order, explode, sensors, camera fit
 assets/three-lib.js  named re-exports of the three.js/GSAP already shipped in
                      assets/ScrollTrigger-n5D4SfYo.js

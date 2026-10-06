@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Three long-haul Timepix2 flights replayed over CARI-7A's simulated cosmic-ray dose field at 11 km, with measured-versus-model dose profiles and the detector frames behind them.">
+<title>Dose Field at 11 km</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* ───────────────────────────────────────────────────────────────────────────
+   Dose Field at 11 km — a night-flight-deck replay.
+
+   Single-theme dark, deliberately: this is an instrument panel, and it reads as
+   one world on either host ground. Every colour is painted explicitly so nothing
+   is inherited from the viewer's theme.
+
+   ONE SEMANTIC RULE, and the whole page obeys it:
+       SLATE  = a modelled quantity (CARI-7A: the dose field, the cutoff field)
+       AMBER  = a measured quantity (the Timepix silicon on board)
+   The two are never mixed on one scale, because they are not the same quantity.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root{
+  --ground:#070B10; --ground-2:#0B1016;
+  --panel:#121A24;  --panel-2:#0F161E;
+  --rule:#22303D;   --rule-soft:#1A2531;
+  --ink:#E6EDF4;    --ink-2:#93A6B8; --ink-3:#64788A;
+  --amber:#E0A33B;  --amber-ink:#F3C85F; --amber-dim:#8C6520;
+  --teal:#2FA596;   --purple:#8E7BE0;  --gold:#BA8725;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{font-size:16px}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased; line-height:1.5;
+}
+h1,h2,h3{font-family:Archivo,"Arial Narrow",system-ui,sans-serif;
+  margin:0; letter-spacing:-.015em; text-wrap:balance}
+.mono{font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,monospace;
+  font-variant-numeric:tabular-nums}
+
+.wrap{max-width:78rem; margin:0 auto; padding:1.2rem 1.5rem 4rem;
+  display:flex; flex-direction:column; gap:1.5rem}
+
+/* ── campaign switch ────────────────────────────────────────────────────── */
+.nav{display:flex; gap:.4rem; align-items:center; flex-wrap:wrap;
+  border-bottom:1px solid var(--rule); padding-bottom:.7rem}
+.nav a{font-family:"IBM Plex Mono",monospace; font-size:.68rem; letter-spacing:.12em;
+  text-transform:uppercase; text-decoration:none; color:var(--ink-3);
+  border:1px solid var(--rule); border-radius:2px; padding:.4rem .75rem;
+  transition:color .15s,border-color .15s,background .15s}
+.nav a:hover{color:var(--ink); border-color:var(--amber-dim)}
+.nav a[aria-current="page"]{color:var(--amber-ink); border-color:var(--amber);
+  background:#101A22}
+.nav a:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+
+/* ── masthead ───────────────────────────────────────────────────────────── */
+.eyebrow{font-family:"IBM Plex Mono",monospace; font-size:.7rem; font-weight:500;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--amber)}
+h1{font-size:clamp(1.8rem,3.6vw,2.7rem); font-weight:700; line-height:1.05; margin-top:.4rem}
+
+/* ── the field ──────────────────────────────────────────────────────────── */
+.stage{display:flex; justify-content:center; border:1px solid var(--rule);
+  border-radius:3px; overflow:hidden; background:var(--ground-2)}
+.mapbox{position:relative; font-size:0}
+.mapbox > *:not(canvas){font-size:1rem; line-height:1.35}
+.map{display:block}
+.badge{position:absolute; font-family:"IBM Plex Mono",monospace; font-size:.64rem;
+  letter-spacing:.07em; color:var(--ink-2); background:rgba(7,11,16,.76);
+  border:1px solid var(--rule-soft); padding:.3rem .5rem; border-radius:2px;
+  pointer-events:none; white-space:nowrap}
+.badge.tr{top:.55rem; right:.55rem; text-align:right}
+.badge.tl{top:.55rem; left:.55rem}
+.clock{position:absolute; left:.55rem; bottom:.55rem; display:flex; gap:.9rem;
+  align-items:flex-end; pointer-events:none}
+.ramp{display:flex; flex-direction:column; gap:.22rem;
+  background:rgba(7,11,16,.76); border:1px solid var(--rule-soft);
+  padding:.36rem .5rem; border-radius:2px}
+.ramp b{font-family:"IBM Plex Mono",monospace; font-size:.58rem; font-weight:500;
+  letter-spacing:.14em; text-transform:uppercase; color:var(--ink-3)}
+.ramp .bar{height:7px; width:132px; border:1px solid var(--rule)}
+.ramp .ends{display:flex; justify-content:space-between;
+  font-family:"IBM Plex Mono",monospace; font-size:.58rem; color:var(--ink-2)}
+
+/* ── mission select ─────────────────────────────────────────────────────── */
+.missions{display:flex; gap:.5rem; flex-wrap:wrap; align-items:center}
+.missions .lbl{font-family:"IBM Plex Mono",monospace; font-size:.6rem;
+  letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); margin-right:.2rem}
+.chip{display:inline-flex; align-items:center; gap:.45rem}
+.chip .sw{width:.6rem; height:.6rem; border-radius:50%; background:var(--leg);
+  flex:0 0 auto}
+button.chip[aria-pressed="true"]{border-color:var(--leg); color:var(--ink);
+  background:#101A22}
+button.chip[aria-pressed="false"] .sw{opacity:.4}
+[hidden]{display:none!important}
+
+/* ── transport ──────────────────────────────────────────────────────────── */
+.transport{display:flex; align-items:center; gap:.85rem; flex-wrap:wrap}
+button{font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink); background:var(--panel);
+  border:1px solid var(--rule); border-radius:2px; padding:.45rem .8rem;
+  cursor:pointer; transition:background .15s,border-color .15s}
+button:hover{background:var(--panel-2); border-color:var(--amber-dim)}
+button[aria-pressed="true"]{border-color:var(--amber); color:var(--amber-ink)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+input[type=range]{flex:1; min-width:12rem; accent-color:var(--amber);
+  background:transparent; cursor:pointer}
+.tclock{font-family:"IBM Plex Mono",monospace; font-size:.92rem; color:var(--amber-ink);
+  font-variant-numeric:tabular-nums; min-width:5.6rem}
+
+/* ── dose-rate traces ───────────────────────────────────────────────────── */
+.traces{display:flex; flex-direction:column; gap:.7rem}
+.trace{background:var(--panel-2); border:1px solid var(--rule); border-radius:3px;
+  border-left:2px solid var(--leg); padding:.6rem .8rem .5rem;
+  display:flex; flex-direction:column; gap:.35rem}
+.trace .hd{display:flex; align-items:baseline; justify-content:space-between;
+  gap:1rem; flex-wrap:wrap}
+.trace .hd .nm{font-family:Archivo,sans-serif; font-weight:600; font-size:.88rem;
+  color:var(--leg)}
+.trace .hd .nm .unit{font-family:"IBM Plex Mono",monospace; font-size:.6rem;
+  font-weight:400; color:var(--ink-3); letter-spacing:0}
+.trace .hd .key{font-family:"IBM Plex Mono",monospace; font-size:.6rem;
+  color:var(--ink-3); display:flex; gap:.9rem; flex-wrap:wrap}
+.trace .hd .key i{font-style:normal; display:inline-flex; align-items:center; gap:.3rem}
+.trace .hd .key i::before{content:""; width:14px; height:2px; background:currentColor}
+.trace canvas{display:block; width:100%; height:224px}
+.offscale{font-family:"IBM Plex Mono",monospace; font-size:.58rem; color:var(--amber-dim)}
+
+/* ── frame inspector ────────────────────────────────────────────────────── */
+.trace canvas{cursor:crosshair}
+.hint{font-family:"IBM Plex Mono",monospace; font-size:.62rem; color:var(--ink-3)}
+.insp{background:var(--panel-2); border:1px solid var(--rule); border-radius:3px;
+  border-top:2px solid var(--leg,var(--amber)); padding:.9rem 1rem;
+  display:flex; flex-direction:column; gap:.8rem}
+.insp .hd{display:flex; align-items:baseline; justify-content:space-between;
+  gap:1rem; flex-wrap:wrap}
+.insp .hd .t{font-family:Archivo,sans-serif; font-weight:600; font-size:.95rem;
+  color:var(--leg,var(--amber))}
+.insp .hd .s{font-family:"IBM Plex Mono",monospace; font-size:.6rem; color:var(--ink-3)}
+.ibody{display:grid; grid-template-columns:19rem 1fr; gap:1.1rem; align-items:start}
+@media (max-width:820px){.ibody{grid-template-columns:1fr}}
+.insp.zoomed .ibody{grid-template-columns:1fr}
+.iframe{display:flex; flex-direction:column; gap:.4rem}
+.iframe canvas{display:block; width:100%; aspect-ratio:1; background:#05080C;
+  border:1px solid var(--rule); image-rendering:pixelated; cursor:crosshair}
+.insp.zoomed .iframe{align-items:center}
+.insp.zoomed .iframe canvas{width:min(100%,34rem)}
+.insp.zoomed .istats{max-width:60rem; margin:0 auto; width:100%}
+.istats{display:flex; flex-direction:column; gap:.6rem; min-width:0; overflow-x:auto}
+.istats table{font-size:.68rem}
+.istats th,.istats td{padding:.3rem .45rem}
+.istats td i{font-style:normal; color:var(--ink-3); font-size:.92em}
+.istats table.pick td:first-child{color:var(--ink-3)}
+.istats table.pick td:last-child{color:var(--amber-ink)}
+.istats table.pick{border:1px solid var(--rule); border-radius:2px}
+.insp .hd button{font-size:.6rem; padding:.2rem .5rem; margin-left:.4rem}
+
+/* ── result ledger ──────────────────────────────────────────────────────── */
+.ledger{background:var(--panel-2); border:1px solid var(--rule); border-radius:3px;
+  padding:1.1rem 1.2rem; display:flex; flex-direction:column; gap:.9rem}
+h2{font-size:1.15rem; font-weight:600}
+table{border-collapse:collapse; width:100%; font-family:"IBM Plex Mono",monospace;
+  font-size:.74rem; font-variant-numeric:tabular-nums}
+th,td{text-align:right; padding:.4rem .5rem; border-bottom:1px solid var(--rule-soft)}
+th:first-child,td:first-child{text-align:left}
+thead th{color:var(--ink-3); font-weight:500; font-size:.62rem;
+  letter-spacing:.1em; text-transform:uppercase; border-bottom:1px solid var(--rule)}
+tfoot td{border-bottom:none; border-top:1px solid var(--rule); color:var(--ink)}
+.dot{display:inline-block; width:.55rem; height:.55rem; border-radius:50%;
+  margin-right:.45rem; vertical-align:baseline}
+.note{color:var(--ink-2); font-size:.84rem; max-width:72ch}
+.note strong{color:var(--ink); font-weight:600}
+.caveats{font-size:.7rem; line-height:1.6; color:var(--ink-3)}
+details{border-top:1px solid var(--rule-soft); padding-top:.7rem}
+summary{cursor:pointer; font-family:"IBM Plex Mono",monospace; font-size:.68rem;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3)}
+summary:hover{color:var(--amber)}
+code{font-family:"IBM Plex Mono",monospace; font-size:.92em; color:var(--amber-ink);
+  background:#101A22; border:1px solid var(--rule-soft); border-radius:2px; padding:0 .3em}
+.scroll{overflow-x:auto; margin-top:.7rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <a href="./" aria-current="page">Airplane</a>
+    <a href="balloons.html">Stratospheric balloons</a>
+  </nav>
+
+  <header>
+    <div class="eyebrow">Timepix2 · 37.5 h of live acquisition</div>
+    <h1>Dose Field at 11 km</h1>
+  </header>
+
+  <div class="stage">
+    <div class="mapbox" id="mapbox">
+    <canvas class="map" id="map"></canvas>
+    <div class="badge tl" id="fieldname"></div>
+    <div class="badge tr" id="extent"></div>
+    <div class="clock">
+      <div class="ramp">
+        <b id="rampLabel">Model · dose rate</b>
+        <div class="bar" id="rampBar"></div>
+        <div class="ends"><span id="rampLo"></span><span id="rampHi"></span></div>
+      </div>
+      <div class="ramp">
+        <b>Measured · in 500 µm Si</b>
+        <div class="bar" id="mBar"></div>
+        <div class="ends"><span>0</span><span>1.7 µGy/h</span></div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+  <div class="missions" id="missions"><span class="lbl">Mission</span></div>
+
+  <div class="transport">
+    <button id="play" aria-pressed="true">Pause</button>
+    <span class="tclock" id="tclock">00:00</span>
+    <input type="range" id="scrub" min="0" max="1000" value="0" step="1" aria-label="Replay time">
+    <button id="speed">1 h / s</button>
+    <button id="field" aria-pressed="false">Show cutoff</button>
+    <button id="loop" aria-pressed="true">Loop</button>
+    <button id="zoom" aria-pressed="true">Zoom to flight</button>
+  </div>
+
+  <section class="traces" id="traces"></section>
+  <p class="hint">Drag across a profile to inspect the detector frames from that interval.</p>
+  <section class="insp" id="insp" hidden></section>
+
+  <section class="ledger">
+    <div class="scroll">
+      <table id="ledger">
+        <thead><tr><th>Leg</th><th>Flown</th><th>Span</th><th>Measured Si</th>
+          <th>CARI-7A D5</th><th>meas/model</th></tr></thead>
+        <tbody></tbody>
+        <tfoot></tfoot>
+      </table>
+    </div>
+  </section>
+
+  <section class="caveats" id="caveats"></section>
+
+  <details>
+    <summary>Table view — every 30 minutes of each leg</summary>
+    <div class="scroll"><table id="dump">
+      <thead><tr><th>Leg</th><th>t [h]</th><th>lat</th><th>lon</th><th>alt [km]</th>
+        <th>λ [°]</th><th>measured [µGy/h]</th><th>cumulative [µGy]</th>
+        <th>field @11 km [µGy/h]</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </details>
+</div>
+
+<script src="replay_data.js"></script>
+<script src="frames_data.js"></script>
+<script>
+(function () {
+  "use strict";
+  var D = window.REPLAY;
+  if (!D) { document.getElementById("fieldname").textContent = "replay_data.js failed to load"; return; }
+
+  /* ── projection ────────────────────────────────────────────────────────
+     Equirectangular, cropped to +/-62 deg. The tracks live inside +/-40, and
+     everything poleward of ~55 deg is the saturated plateau, so the crop costs
+     no structure and buys a 2.9:1 frame that sits better than a 2:1 world. */
+  var LAT_LIM = 62, AR = 360 / 124;              // the world frame: wide and short
+  var AR_MIN = 1.30, AR_MAX = 3.00;             // how far a zoomed frame may reshape
+  var WORLD = { lon0: -180, lonw: 360, latTop: LAT_LIM, lath: 2 * LAT_LIM, ar: AR };
+  var VIEW = { lon0: -180, lonw: 360, latTop: LAT_LIM, lath: 2 * LAT_LIM, ar: AR };
+
+  /* Longitude is mapped relative to the view's west edge, unwrapped eastwards.
+     That is what lets the view sit ACROSS the dateline: SYD-LAX runs from +151
+     to -118, which as a plain min/max is the whole planet and as an unwrapped
+     span is 91 degrees. */
+  function ulon(lon) { return ((lon - VIEW.lon0) % 360 + 360) % 360; }
+  function px(lon, w) { return ulon(lon) / VIEW.lonw * w; }
+  function py(lat, h) { return (VIEW.latTop - lat) / VIEW.lath * h; }
+
+  /* The tightest view containing every point, on the circle rather than the line:
+     find the widest empty longitude gap and take its complement. */
+  function fitView(lons, lats) {
+    var srt = lons.slice().sort(function (a, b) { return a - b; }), n = srt.length;
+    var gap = -1, gi = 0, i, d;
+    for (i = 0; i < n; i++) {
+      d = ((srt[(i + 1) % n] - srt[i]) % 360 + 360) % 360;
+      if (d > gap) { gap = d; gi = i; }
+    }
+    var lon0 = srt[(gi + 1) % n], lonw = Math.max(360 - gap, 2);
+    var latMin = Math.min.apply(null, lats), latMax = Math.max.apply(null, lats);
+    var lath = Math.max(latMax - latMin, 2), latC = (latMin + latMax) / 2;
+
+    lonw *= 1.16; lon0 -= lonw * 0.069;            // breathing room around the track
+    lath *= 1.30;
+
+    /* The FRAME takes its shape from the flight, instead of the flight being
+       padded out to fill a fixed frame. These legs are tall and narrow -- SYD-LAX
+       spans 91 deg of longitude against 68 of latitude -- and forcing them into
+       the world view's 2.9:1 would open the view to 254 deg of longitude just to
+       fill the width, which is not a zoom. The aspect is clamped so the frame
+       stays a map rather than becoming a column. */
+    var ar = Math.max(AR_MIN, Math.min(AR_MAX, lonw / lath));
+    if (lonw / lath < ar) lonw = lath * ar; else lath = lonw / ar;
+    if (lath > 170) { lath = 170; lonw = lath * ar; }
+    latC = Math.max(-90 + lath / 2, Math.min(90 - lath / 2, latC));
+    return { lon0: ((lon0 + 180) % 360 + 360) % 360 - 180, lonw: lonw,
+             latTop: latC + lath / 2, lath: lath, ar: ar };
+  }
+
+  function targetView() {
+    if (!ZOOM || SEL === null) return copyView(WORLD);
+    var L = legs.filter(function (l) { return l.key === SEL; })[0];
+    return L ? fitView(L.track.lon, L.track.lat) : copyView(WORLD);
+  }
+
+  /* ── ramps ─────────────────────────────────────────────────────────────
+     Both are monotone in lightness, so either reads as a magnitude even in
+     greyscale. Slate carries every MODELLED field; amber only ever carries the
+     measurement. Keeping the hue tied to the provenance is the whole point. */
+  var SLATE = [[10,16,23],[22,41,58],[42,74,102],[76,119,151],[147,178,201]];
+  var AMBER = [[74,52,22],[140,101,32],[224,163,59],[251,227,166]];
+  function ramp(stops, u) {
+    u = u < 0 ? 0 : u > 1 ? 1 : u;
+    var f = u * (stops.length - 1), i = Math.min(Math.floor(f), stops.length - 2), k = f - i;
+    var a = stops[i], b = stops[i + 1];
+    return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
+  }
+  function rgb(c) { return "rgb(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + ")"; }
+  function cssRamp(stops) {
+    var s = [], i;
+    for (i = 0; i <= 10; i++) s.push(rgb(ramp(stops, i / 10)) + " " + (i * 10) + "%");
+    return "linear-gradient(90deg," + s.join(",") + ")";
+  }
+  document.getElementById("mBar").style.background = cssRamp(AMBER);
+
+  /* ── the simulated field ───────────────────────────────────────────────── */
+  var F = D.field, MODE = "dose";
+
+  /* The legs flew 23 Jan, 10 Feb and 17 Apr 2026 and the Sun moved between them:
+     CARI-7A's polar plateau at 11 km climbs 1.72 -> 1.90 -> 2.07 uGy/h as the
+     heliocentric potential falls 1185 -> 1069 -> 880 MV. One epoch under all three
+     would misstate two of them by up to ~17 % at high latitude, so selecting a
+     mission switches the ground to the field for THAT flight's month. The cutoff
+     field is geomagnetic and does not move with the Sun, so it is epoch-free. */
+  function curEpoch() {
+    if (SEL) {
+      var L = legs.filter(function (l) { return l.key === SEL; })[0];
+      if (L && L.epoch && F.epochs[L.epoch]) return L.epoch;
+    }
+    return F.default_epoch;
+  }
+  function fieldSpec() {
+    var ek = curEpoch(), e = F.epochs[ek];
+    return MODE === "dose"
+      ? { g: e.dose, lo: e.lo, hi: e.hi, unit: "µGy/h",
+          label: "Model · dose rate", dp: 2,
+          name: "CARI-7A absorbed dose rate · " + F.alt_km + " km · " + ek +
+                (e.mv ? " · " + e.mv + " MV" : "") }
+      : { g: F.vcr, lo: 0, hi: F.vcr_max, unit: "GV", dp: 1,
+          label: "Model · cutoff rigidity",
+          name: "Vertical cutoff rigidity · " + F.alt_km + " km · epoch-independent" };
+  }
+  /* field.dose is [lat][lon] with lat ASCENDING from -90, so row 0 is the south
+     pole and the raster has to be flipped to put north at the top. */
+  function sample(g, lat, lon) {
+    var fy = (lat - F.lat0) / (F.lat1 - F.lat0) * (F.nlat - 1);
+    var fx = (lon - F.lon0) / 360 * F.nlon;
+    var y0 = Math.max(0, Math.min(F.nlat - 2, Math.floor(fy))), ky = fy - y0;
+    var x0 = Math.floor(fx), kx = fx - x0;
+    var xa = ((x0 % F.nlon) + F.nlon) % F.nlon, xb = (xa + 1) % F.nlon;
+    return (g[y0][xa] * (1 - kx) + g[y0][xb] * kx) * (1 - ky)
+         + (g[y0 + 1][xa] * (1 - kx) + g[y0 + 1][xb] * kx) * ky;
+  }
+  var fieldCanvas = document.createElement("canvas");
+  function buildField() {
+    var s = fieldSpec(), lat, i, j;
+    // render only the visible latitude band, at grid resolution, then upscale
+    var H = 248, W = F.nlon * 4;
+    fieldCanvas.width = W; fieldCanvas.height = H;
+    var fx = fieldCanvas.getContext("2d"), img = fx.createImageData(W, H), d = img.data;
+    for (j = 0; j < H; j++) {
+      lat = VIEW.latTop - (j + 0.5) / H * VIEW.lath;
+      for (i = 0; i < W; i++) {
+        var lon = VIEW.lon0 + (i + 0.5) / W * VIEW.lonw;
+        var c = ramp(SLATE, (sample(s.g, lat, lon) - s.lo) / (s.hi - s.lo));
+        var p = (j * W + i) * 4;
+        d[p] = c[0]; d[p + 1] = c[1]; d[p + 2] = c[2]; d[p + 3] = 255;
+      }
+    }
+    fx.putImageData(img, 0, 0);
+    document.getElementById("rampLabel").textContent = s.label;
+    document.getElementById("rampBar").style.background = cssRamp(SLATE);
+    document.getElementById("rampLo").textContent = s.lo.toFixed(s.dp);
+    document.getElementById("rampHi").textContent = s.hi.toFixed(s.dp) + " " + s.unit;
+    document.getElementById("fieldname").textContent = s.name;
+  }
+
+  /* ── legs ──────────────────────────────────────────────────────────────── */
+  var FLOWN = { abu_syd: "23 Jan 2026", syd_abu: "10 Feb 2026", syd_lax: "17 Apr 2026" };
+  var DARK = { "#008176": "#2FA596", "#7b3294": "#8E7BE0", "#b8860b": "#BA8725" };
+  var legs = D.legs.map(function (L) {
+    var o = Object.create(L);
+    o.col = DARK[L.color] || L.color;
+    o.flown = FLOWN[L.key] || "";
+    o.end = L.track.t[L.track.t.length - 1];
+    return o;
+  });
+  /* Mission selection. SEL is null for "all three", otherwise a single leg key.
+     The clock rescales to whatever is shown: with one leg selected the scrubber
+     spans that leg alone, so a 11.7 h flight does not sit idle while a 13.7 h one
+     finishes. Everything that reads a leg goes through shown(). */
+  var SEL = null;
+  function shown(L) { return SEL === null || L.key === SEL; }
+  function visible() { return legs.filter(shown); }
+  var TMAX = 0;
+  function recalcSpan() {
+    TMAX = Math.max.apply(null, visible().map(function (l) { return l.end; }));
+    if (T > TMAX) T = TMAX;
+  }
+
+  function at(arrT, t) {                      // index of the last sample <= t
+    var lo = 0, hi = arrT.length - 1, m;
+    if (t <= arrT[0]) return 0;
+    if (t >= arrT[hi]) return hi;
+    while (hi - lo > 1) { m = (lo + hi) >> 1; if (arrT[m] <= t) lo = m; else hi = m; }
+    return lo;
+  }
+  function lerpAt(ts, vs, t) {                // linear interpolation on a series
+    var i = at(ts, t);
+    if (i >= ts.length - 1) return vs[vs.length - 1];
+    var k = (t - ts[i]) / (ts[i + 1] - ts[i]);
+    return vs[i] + (vs[i + 1] - vs[i]) * k;
+  }
+  function dlon(a, b) { return ((b - a + 180) % 360 + 360) % 360 - 180; }
+
+  /* ── canvas ────────────────────────────────────────────────────────────── */
+  var cv = document.getElementById("map"), ctx = cv.getContext("2d"), W = 0, H = 0;
+  var extent = document.getElementById("extent");
+  var stageEl = cv.closest(".stage");
+  /* A zoomed frame is nearly square, and at full page width that is ~900 px tall --
+     enough to push the dose profile below the fold, which is the one thing the map
+     exists to be read against. Cap the height and let the map narrow instead. */
+  function mapCap() { return Math.min(window.innerHeight * 0.50, 520); }
+
+  function resize() {
+    if (typeof sizeTraces === "function") sizeTraces();
+    var avail = stageEl.clientWidth - 2, ar = VIEW.ar || AR;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = avail; H = W / ar;
+    if (H > mapCap()) { H = mapCap(); W = H * ar; }
+    W = Math.round(W); H = Math.round(H);
+    cv.width = W * dpr; cv.height = H * dpr;
+    cv.style.width = W + "px"; cv.style.height = H + "px";
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    buildField();
+    buildBase();
+    draw();
+  }
+
+  /* A polyline in lon/lat, split wherever it crosses the antimeridian so the
+     line never streaks back across the whole frame. */
+  function routePath(g, lat, lon, n) {
+    var i, moved = false;
+    g.beginPath();
+    for (i = 0; i < n; i++) {
+      if (moved && Math.abs(ulon(lon[i]) - ulon(lon[i - 1])) > 180) moved = false;
+      if (moved) g.lineTo(px(lon[i], W), py(lat[i], H));
+      else g.moveTo(px(lon[i], W), py(lat[i], H));
+      moved = true;
+    }
+  }
+
+  var T = 0, playing = true, SPEEDS = [0.5, 1, 2, 4], si = 1;
+
+  /* Zoom. Selecting a mission flies the view to that leg's own extent; the
+     transition is eased rather than cut, because a hard jump across a third of
+     the planet loses the viewer's sense of where the new frame sits. The field
+     raster is rebuilt each step of the flight, which is why it is kept short. */
+  var ZOOM = true, zoomFrom = null, zoomTo = null, zoomT = 0, ZOOM_MS = 620;
+  function lerpView(a, b, u) {
+    // interpolate the west edge the short way round, so a dateline view does not
+    // unwind the long way across the Pacific
+    var d = ((b.lon0 - a.lon0 + 540) % 360) - 180;
+    return { lon0: a.lon0 + d * u, lonw: a.lonw + (b.lonw - a.lonw) * u,
+             latTop: a.latTop + (b.latTop - a.latTop) * u,
+             lath: a.lath + (b.lath - a.lath) * u };
+  }
+  /* ALWAYS copy. VIEW used to be assigned WORLD by reference and then mutated
+     (`VIEW.ar = ...`), which silently rewrote WORLD.ar to the last mission's aspect.
+     Returning to "all three" then drew a 360x124 window at a ~1.3 aspect -- a
+     vertically stretched map. Nothing may hold a reference to a shared view. */
+  function copyView(v) {
+    return { lon0: v.lon0, lonw: v.lonw, latTop: v.latTop, lath: v.lath, ar: v.ar };
+  }
+
+  function flyTo(v, instant) {
+    /* The frame's SHAPE changes at once; only the window being viewed is eased.
+       VIEW.ar has to be updated BEFORE resize(), because resize() sizes the canvas
+       backing store from it -- setting the CSS aspect-ratio alone left the element
+       box and the backing store disagreeing, which is what made the first click on
+       a mission render a stretched map until something else forced a resize. */
+    v = copyView(v);
+    zoomFrom = copyView(VIEW); zoomFrom.ar = v.ar;
+    VIEW = copyView(VIEW); VIEW.ar = v.ar;
+    if (instant) { VIEW = v; zoomFrom = zoomTo = null; resize(); return; }
+    zoomTo = v; zoomT = 0;
+    resize();
+  }
+  function stepZoom(dt) {
+    if (!zoomTo) return false;
+    zoomT = Math.min(1, zoomT + dt * 1000 / ZOOM_MS);
+    var e = zoomT < .5 ? 2 * zoomT * zoomT : 1 - Math.pow(-2 * zoomT + 2, 2) / 2;
+    VIEW = lerpView(zoomFrom, zoomTo, e);
+    VIEW.ar = zoomTo.ar;
+    if (zoomT >= 1) { VIEW = copyView(zoomTo); zoomFrom = zoomTo = null; }
+    buildField(); buildBase();
+    return true;
+  }
+
+  /* The field, coastlines, graticule and the faint planned routes never change
+     between frames. Painting them once into an offscreen layer turns the per-frame
+     cost into one drawImage plus the trails, instead of ~2 000 path ops. */
+  var base = document.createElement("canvas");
+  function buildBase() {
+    if (!W) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    base.width = W * dpr; base.height = H * dpr;
+    var g = base.getContext("2d");
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.drawImage(fieldCanvas, 0, 0, W, H);
+
+    // coastlines — a geographic reference, kept recessive
+    g.strokeStyle = "rgba(226,238,248,.46)"; g.lineWidth = .85;
+    D.coast.forEach(function (poly) {
+      var i, moved = false, plon;
+      g.beginPath();
+      for (i = 0; i < poly.length; i += 2) {
+        var lo = poly[i], la = poly[i + 1];
+        if (la > VIEW.latTop + 4 || la < VIEW.latTop - VIEW.lath - 4) { moved = false; continue; }
+        if (moved && Math.abs(ulon(lo) - ulon(plon)) > 180) moved = false;
+        if (moved) g.lineTo(px(lo, W), py(la, H)); else g.moveTo(px(lo, W), py(la, H));
+        moved = true; plon = lo;
+      }
+      g.stroke();
+    });
+
+    // graticule
+    // graticule spacing follows the zoom, so a tight view is not left blank
+    g.strokeStyle = "rgba(214,230,242,.10)"; g.lineWidth = .6;
+    var gs = VIEW.lonw > 180 ? 30 : VIEW.lonw > 90 ? 15 : VIEW.lonw > 40 ? 10 : 5, k;
+    for (k = Math.ceil((VIEW.latTop - VIEW.lath) / gs) * gs; k <= VIEW.latTop; k += gs) {
+      g.beginPath(); g.moveTo(0, py(k, H)); g.lineTo(W, py(k, H)); g.stroke();
+    }
+    for (k = 0; k <= VIEW.lonw; k += gs) {
+      var xg = k / VIEW.lonw * W;
+      g.beginPath(); g.moveTo(xg, 0); g.lineTo(xg, H); g.stroke();
+    }
+
+    // the planned route, faint, so the frame is never empty and the viewer can see
+    // where each aircraft is going before it gets there
+    g.globalAlpha = .46; g.lineWidth = 1.4; g.lineJoin = "round"; g.lineCap = "round";
+    visible().forEach(function (L) {
+      g.strokeStyle = L.col;
+      routePath(g, L.track.lat, L.track.lon, L.track.t.length);
+      g.stroke();
+    });
+    g.globalAlpha = 1;
+  }
+
+  function draw() {
+    if (!W) return;
+    ctx.clearRect(0, 0, W, H);
+    ctx.drawImage(base, 0, 0, W, H);
+    extent.textContent = VIEW.lonw > 355 ? "world"
+      : Math.round(VIEW.lonw) + "° × " + Math.round(VIEW.lath) + "°";
+
+    visible().forEach(function (L) {
+      var tr = L.track, n = tr.t.length, i = at(tr.t, T), k, j;
+
+      // the measured trail: drawn only as far as the replay has got, and coloured
+      // by the SMOOTHED dose so it reads as a field rather than Poisson noise
+      var upto = Math.min(i + 1, n - 1);
+      for (j = 1; j <= upto; j++) {
+        if (Math.abs(ulon(tr.lon[j]) - ulon(tr.lon[j - 1])) > 180) continue;
+        if (tr.gap[j]) continue;                      // never draw across a dropout
+        ctx.beginPath();
+        ctx.moveTo(px(tr.lon[j - 1], W), py(tr.lat[j - 1], H));
+        ctx.lineTo(px(tr.lon[j], W), py(tr.lat[j], H));
+        ctx.strokeStyle = rgb(ramp(AMBER, tr.dose_s[j] / 1.7));
+        ctx.lineWidth = 2.6; ctx.lineCap = "round";
+        ctx.stroke();
+      }
+
+      // the aircraft, tweened between the ~1 min samples
+      var x, y, la, lo2;
+      if (i >= n - 1 || T >= L.end) { la = tr.lat[n - 1]; lo2 = tr.lon[n - 1]; }
+      else {
+        k = (T - tr.t[i]) / (tr.t[i + 1] - tr.t[i]);
+        la = tr.lat[i] + (tr.lat[i + 1] - tr.lat[i]) * k;
+        lo2 = tr.lon[i] + dlon(tr.lon[i], tr.lon[i + 1]) * k;
+      }
+      x = px(lo2, W); y = py(la, H);
+
+      ctx.beginPath(); ctx.arc(x, y, 6.5, 0, 6.2832);
+      ctx.fillStyle = "rgba(7,11,16,.85)"; ctx.fill();
+      ctx.strokeStyle = L.col; ctx.lineWidth = 2; ctx.stroke();
+      ctx.beginPath(); ctx.arc(x, y, 2.4, 0, 6.2832);
+      ctx.fillStyle = rgb(ramp(AMBER, tr.dose_s[Math.min(i, n - 1)] / 1.7));
+      ctx.fill();
+    });
+  }
+
+  /* ── instruments ───────────────────────────────────────────────────────── */
+  /* No live numeric panel. The per-leg figures that do not change are printed once
+     in each trace header, and the value AT the playhead is read off the graph, where
+     it sits next to the curve it belongs to instead of flickering on its own. */
+  function readouts() {
+    var hh = Math.floor(T), mm = Math.floor((T - hh) * 60);
+    document.getElementById("tclock").textContent =
+      (hh < 10 ? "0" : "") + hh + ":" + (mm < 10 ? "0" : "") + mm;
+    document.getElementById("scrub").value = Math.round(T / TMAX * 1000);
+  }
+
+  /* ── transport ─────────────────────────────────────────────────────────── */
+  var playBtn = document.getElementById("play"), scrub = document.getElementById("scrub"),
+      speedBtn = document.getElementById("speed"), fieldBtn = document.getElementById("field");
+  function setPlaying(v) {
+    playing = v;
+    playBtn.textContent = v ? "Pause" : "Play";
+    playBtn.setAttribute("aria-pressed", v ? "true" : "false");
+  }
+  playBtn.addEventListener("click", function () {
+    if (!playing && T >= TMAX) T = 0;
+    setPlaying(!playing);
+  });
+  scrub.addEventListener("input", function () {
+    T = scrub.value / 1000 * TMAX; setPlaying(false);
+    draw(); drawTraces(); readouts(); renderInspector();
+  });
+  speedBtn.addEventListener("click", function () {
+    si = (si + 1) % SPEEDS.length;
+    speedBtn.textContent = SPEEDS[si] + " h / s";
+  });
+  fieldBtn.addEventListener("click", function () {
+    MODE = MODE === "dose" ? "vcr" : "dose";
+    fieldBtn.textContent = MODE === "dose" ? "Show cutoff" : "Show dose";
+    fieldBtn.setAttribute("aria-pressed", MODE === "vcr" ? "true" : "false");
+    buildField(); buildBase(); draw();
+  });
+
+  /* ── dose-rate traces ───────────────────────────────────────────────────
+     The map shows WHERE the dose was; this shows WHAT IT DID. One panel per
+     mission, small multiples rather than three amber lines on one frame -- leg
+     identity comes from the panel, so inside a panel amber can keep meaning
+     "measured" and slate "modelled" without collision.
+
+     Three series, and the middle one is the comparison that matters:
+       amber solid   measured silicon, 7-sample (~7 min) smoothed
+       amber dots    the raw per-minute values the smoothing is hiding
+       slate solid   CARI-7A D5 x 0.76  -- the model converted into silicon
+       slate dashed  CARI-7A D5 raw     -- the phantom quantity, for reference
+     Plotting D5 raw alone against the measurement would read as a 24% model
+     failure; it is a change of medium, so the converted line is drawn too. */
+  var SI = 0.76;
+  var tracesEl = document.getElementById("traces");
+  var PAD = { l: 38, r: 12, t: 12, b: 30 }, ALT_H = 52, GAP_H = 14;
+  var ALT_MAX = 13000;
+
+  legs.forEach(function (L) {
+    var w = document.createElement("div");
+    w.className = "trace";
+    w.style.setProperty("--leg", L.col);
+    w.innerHTML =
+      '<div class="hd"><span class="nm">' + L.short +
+      ' <span class="unit">' + L.flown + ' · ' + L.span_h.toFixed(1) + ' h · max ' +
+      L.alt_max_km.toFixed(1) + ' km · λ ' + L.geo_from.toFixed(0) + '→' +
+      L.geo_to.toFixed(0) + '° · ' + L.meas_uGy.toFixed(1) + ' µGy measured</span></span>' +
+      '<span class="key">' +
+      '<i style="color:#E0A33B">measured Si</i>' +
+      '<i style="color:#7FA3BE">CARI-7A × 0.76 → Si</i>' +
+      '<i style="color:#64879F">CARI-7A D5 (phantom)</i>' +
+      '<span class="offscale" data-off></span></span></div>';
+    var c = document.createElement("canvas");
+    w.appendChild(c);
+    tracesEl.appendChild(w);
+    L.trace = { wrap: w, cv: c, ctx: c.getContext("2d"),
+                base: document.createElement("canvas"),
+                off: w.querySelector("[data-off]"), w: 0, h: 0 };
+  });
+
+  function traceScales() {
+    var vis = visible(), ymax = 0;
+    vis.forEach(function (L) {
+      var i;
+      for (i = 0; i < L.track.dose_s.length; i++) if (L.track.dose_s[i] > ymax) ymax = L.track.dose_s[i];
+      for (i = 0; i < L.model.d5.length; i++) if (L.model.d5[i] > ymax) ymax = L.model.d5[i];
+    });
+    return { xmax: TMAX, ymax: Math.ceil(ymax * 1.12 * 2) / 2 };
+  }
+
+  function buildTrace(L, sc) {
+    var T0 = L.trace, cw = T0.w, ch = T0.h;
+    if (!cw) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    T0.base.width = cw * dpr; T0.base.height = ch * dpr;
+    var g = T0.base.getContext("2d");
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, cw, ch);
+
+    var x0 = PAD.l, x1 = cw - PAD.r;
+    var dy0 = PAD.t, dy1 = ch - PAD.b - ALT_H - GAP_H;       // dose plot
+    var ay0 = ch - PAD.b - ALT_H, ay1 = ch - PAD.b;          // altitude strip
+    var X = function (t) { return x0 + t / sc.xmax * (x1 - x0); };
+    var Y = function (v) { return dy1 - Math.min(v, sc.ymax) / sc.ymax * (dy1 - dy0); };
+    var A = function (a) { return ay1 - Math.min(a / ALT_MAX, 1) * (ay1 - ay0); };
+
+    g.font = '10px "IBM Plex Mono",monospace';
+
+    // y grid + labels
+    var step = sc.ymax > 3 ? 1 : sc.ymax > 1.5 ? 0.5 : 0.25, v;
+    for (v = 0; v <= sc.ymax + 1e-9; v += step) {
+      g.strokeStyle = v === 0 ? "rgba(214,230,242,.20)" : "rgba(214,230,242,.085)";
+      g.lineWidth = 1;
+      g.beginPath(); g.moveTo(x0, Y(v)); g.lineTo(x1, Y(v)); g.stroke();
+      g.fillStyle = "#64788A"; g.textAlign = "right"; g.textBaseline = "middle";
+      g.fillText(v.toFixed(step < 1 ? 2 : 0), x0 - 6, Y(v));
+    }
+    // x grid + labels, hours
+    var hstep = sc.xmax > 10 ? 2 : 1, h;
+    g.textAlign = "center"; g.textBaseline = "top";
+    for (h = 0; h <= sc.xmax; h += hstep) {
+      g.strokeStyle = "rgba(214,230,242,.085)"; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(X(h), dy0); g.lineTo(X(h), ay1); g.stroke();
+      g.fillStyle = "#64788A"; g.fillText(h + " h", X(h), ay1 + 6);
+    }
+
+    // altitude strip — its own scale in its own band, never a second y-axis
+    g.beginPath(); g.moveTo(X(L.track.t[0]), ay1);
+    L.track.t.forEach(function (t, i) { g.lineTo(X(t), A(L.track.alt[i])); });
+    g.lineTo(X(L.track.t[L.track.t.length - 1]), ay1); g.closePath();
+    g.fillStyle = "rgba(127,163,190,.20)"; g.fill();
+    g.strokeStyle = "rgba(127,163,190,.45)"; g.lineWidth = 1;
+    g.beginPath();
+    L.track.t.forEach(function (t, i) { i ? g.lineTo(X(t), A(L.track.alt[i])) : g.moveTo(X(t), A(L.track.alt[i])); });
+    g.stroke();
+    // altitude keeps its own band and its own scale -- aligned in time with the
+    // dose plot above, never sharing its y-axis
+    g.strokeStyle = "rgba(214,230,242,.085)"; g.lineWidth = 1;
+    [0, 6000, 12000].forEach(function (av) {
+      g.beginPath(); g.moveTo(x0, A(av)); g.lineTo(x1, A(av)); g.stroke();
+      g.fillStyle = "#64788A"; g.textAlign = "right"; g.textBaseline = "middle";
+      g.fillText(String(av / 1000), x0 - 6, A(av));
+    });
+    g.textAlign = "left"; g.textBaseline = "bottom";
+    g.fillStyle = "#7FA3BE";
+    g.fillText("altitude  km", x0 + 4, ay0 - 3);
+
+    // raw per-minute measured, the noise the smoothing removes
+    var nOff = 0;
+    g.fillStyle = "rgba(224,163,59,.30)";
+    L.track.t.forEach(function (t, i) {
+      if (L.track.dose[i] > sc.ymax) { nOff++; return; }
+      g.beginPath(); g.arc(X(t), Y(L.track.dose[i]), 1.1, 0, 6.2832); g.fill();
+    });
+    T0.off.textContent = nOff ? nOff + " raw pt" + (nOff > 1 ? "s" : "") +
+      " off scale (stuck pixel / burst frames)" : "";
+
+    function line(ts, vs, color, width, dash) {
+      g.strokeStyle = color; g.lineWidth = width;
+      g.setLineDash(dash || []);
+      g.beginPath();
+      var started = false, i;
+      for (i = 0; i < ts.length; i++) {
+        if (vs[i] == null) { started = false; continue; }
+        if (started) g.lineTo(X(ts[i]), Y(vs[i])); else g.moveTo(X(ts[i]), Y(vs[i]));
+        started = true;
+      }
+      g.stroke(); g.setLineDash([]);
+    }
+    line(L.model.t, L.model.d5, "#64879F", 1.3, [4, 3]);
+    line(L.model.t, L.model.d5.map(function (v) { return v * SI; }), "#7FA3BE", 1.7);
+    line(L.track.t, L.track.dose_s, "#E0A33B", 1.9);
+  }
+
+  function sizeTraces() {
+    var sc = traceScales();
+    visible().forEach(function (L) {
+      var T0 = L.trace, r = T0.cv.getBoundingClientRect();
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      T0.w = Math.round(r.width) || 600; T0.h = 224;
+      T0.cv.width = T0.w * dpr; T0.cv.height = T0.h * dpr;
+      T0.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      buildTrace(L, sc);
+    });
+    drawTraces();
+  }
+
+  function drawTraces() {
+    var sc = traceScales();
+    visible().forEach(function (L) {
+      var T0 = L.trace, g = T0.ctx, cw = T0.w, ch = T0.h;
+      if (!cw) return;
+      g.clearRect(0, 0, cw, ch);
+      g.drawImage(T0.base, 0, 0, cw, ch);
+
+      var x0 = PAD.l, x1 = cw - PAD.r;
+      if (SELR && SELR.key === L.key && SELR.t1 > SELR.t0) {
+        var sa = x0 + SELR.t0 / sc.xmax * (x1 - x0);
+        var sb = x0 + SELR.t1 / sc.xmax * (x1 - x0);
+        g.fillStyle = "rgba(224,163,59,.13)";
+        g.fillRect(sa, PAD.t, Math.max(sb - sa, 1), ch - PAD.b - PAD.t);
+        g.strokeStyle = "rgba(224,163,59,.55)"; g.lineWidth = 1;
+        g.beginPath(); g.moveTo(sa, PAD.t); g.lineTo(sa, ch - PAD.b);
+        g.moveTo(sb, PAD.t); g.lineTo(sb, ch - PAD.b); g.stroke();
+      }
+      var dy0 = PAD.t, dy1 = ch - PAD.b - ALT_H - GAP_H;
+      var ay0 = ch - PAD.b - ALT_H, ay1 = ch - PAD.b;
+      var Y = function (v) { return dy1 - Math.min(v, sc.ymax) / sc.ymax * (dy1 - dy0); };
+      var A = function (a) { return ay1 - Math.min(a / ALT_MAX, 1) * (ay1 - ay0); };
+      var x = x0 + Math.min(T, sc.xmax) / sc.xmax * (x1 - x0);
+
+      // playhead — the only thing that moves, so the panel is cheap per frame
+      g.strokeStyle = "rgba(243,200,95,.85)"; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(x, PAD.t); g.lineTo(x, ch - PAD.b); g.stroke();
+
+      /* The reading, placed ON the curve rather than in a panel of its own. A
+         number that sits beside the line it came from is legible while it changes;
+         the same number alone in a big tile just flickers. */
+      var tr = L.track, i = at(tr.t, T), live = T >= tr.t[0] && T <= L.end;
+      if (!live) return;
+      var mv = tr.dose_s[i], md = lerpAt(L.model.t, L.model.d5, T) * SI;
+      g.fillStyle = "#7FA3BE";
+      g.beginPath(); g.arc(x, Y(md), 2.6, 0, 6.2832); g.fill();
+      g.fillStyle = "#E0A33B";
+      g.beginPath(); g.arc(x, Y(mv), 3.2, 0, 6.2832); g.fill();
+      g.fillStyle = "#9FC0D8";
+      g.beginPath(); g.arc(x, A(tr.alt[i]), 2.6, 0, 6.2832); g.fill();
+      g.font = '600 10px "IBM Plex Mono",monospace';
+      g.textBaseline = "bottom"; g.textAlign = x > x1 - 60 ? "right" : "left";
+      g.fillText((tr.alt[i] / 1000).toFixed(1) + " km",
+                 x + (x > x1 - 60 ? -5 : 5), A(tr.alt[i]) - 4);
+
+      var txt = mv.toFixed(2) + "  /  " + md.toFixed(2);
+      g.font = '600 11px "IBM Plex Mono",monospace';
+      var tw = g.measureText(txt).width + 10, left = x + 8;
+      if (left + tw > x1) left = x - 8 - tw;        // flip before it leaves the frame
+      g.fillStyle = "rgba(11,16,22,.88)";
+      g.fillRect(left, dy0 + 1, tw, 16);
+      g.textBaseline = "middle"; g.textAlign = "left";
+      g.fillStyle = "#E0A33B"; g.fillText(mv.toFixed(2), left + 5, dy0 + 9.5);
+      var wm = g.measureText(mv.toFixed(2)).width;
+      g.fillStyle = "#64788A"; g.fillText("  /  ", left + 5 + wm, dy0 + 9.5);
+      g.fillStyle = "#7FA3BE";
+      g.fillText(md.toFixed(2), left + 5 + wm + g.measureText("  /  ").width, dy0 + 9.5);
+    });
+  }
+
+  /* ── frame inspector ────────────────────────────────────────────────────
+     Drag a range on a dose profile and every exported frame in that range is
+     INTEGRATED into one 256x256 image -- the sensor as it would look if the
+     shutter had stayed open across the whole selection. Clicking the image
+     enlarges it; clicking a track in it identifies that track from the ROOT file.
+
+     Everything here is masked exactly as ../flight_dedx.py masks it (noisy pixels,
+     hot/saturated pixels, burst frames), so what is drawn is what the analysis
+     counted -- not the raw file. */
+  var FR = window.FRAMES;
+  var FRAMP = [[12, 9, 4], [92, 56, 14], [224, 163, 59], [247, 214, 134], [255, 246, 226]];
+  var ETOP = 120;                                  // keV/pixel at the top of the ramp
+  var inspEl = document.getElementById("insp");
+  var SELR = null;                                 // {key, t0, t1}
+  var INT = null;                                  // integrated image + pixel index
+  var PICK = -1;                                   // index of the clicked cluster
+
+  /* Integrate: paint every cluster into one frame, and keep a pixel -> cluster
+     index so a click can be resolved back to the object that made the mark. */
+  function integrate(wins) {
+    var idx = new Int32Array(65536), cls = [], nfr = 0, i, j, w, c, k;
+    idx.fill(-1);
+    for (i = 0; i < wins.length; i++) {
+      w = wins[i]; nfr += w.nfr;
+      for (j = 0; j < w.cl.length; j++) {
+        c = w.cl[j]; c._t = w.t;
+        var ci = cls.push(c) - 1;
+        for (k = 0; k < c.x.length; k++) idx[c.y[k] * 256 + c.x[k]] = ci;
+      }
+    }
+    return { idx: idx, cls: cls, nfr: nfr };
+  }
+
+  function drawIntegrated(cvs, mark) {
+    var m = mark || 1;
+    var g = cvs.getContext("2d"), lg = Math.log(1 + ETOP), i, k, c;
+    g.fillStyle = "#05080C"; g.fillRect(0, 0, 256, 256);
+    for (i = 0; i < INT.cls.length; i++) {
+      c = INT.cls[i];
+      for (k = 0; k < c.x.length; k++) {
+        g.fillStyle = rgb(ramp(FRAMP, Math.log(1 + Math.min(c.e[k], ETOP)) / lg));
+        g.fillRect(c.x[k], 255 - c.y[k], m, m);
+      }
+    }
+    if (PICK >= 0 && INT.cls[PICK]) {               // ring the selected track
+      c = INT.cls[PICK];
+      var x0 = Math.min.apply(null, c.x), x1 = Math.max.apply(null, c.x);
+      var y0 = Math.min.apply(null, c.y), y1 = Math.max.apply(null, c.y);
+      g.strokeStyle = "#5BE3C8"; g.lineWidth = 1;
+      g.strokeRect(x0 - 2.5, 255 - y1 - 2.5, x1 - x0 + 5, y1 - y0 + 5);
+    }
+  }
+
+  function typeRows() {
+    var n = {}, v = {}, i, c, t;
+    for (i = 0; i < INT.cls.length; i++) {
+      c = INT.cls[i];
+      n[c.ty] = (n[c.ty] || 0) + 1;
+      v[c.ty] = (v[c.ty] || 0) + c.vol;
+    }
+    var tot = INT.cls.length, totv = 0;
+    for (t in v) totv += v[t];
+    var rows = Object.keys(n).sort(function (a, b) { return v[b] - v[a]; }).map(function (k) {
+      return "<tr><td>" + (FR.type_name[k] || ("type " + k)) + " <i>" +
+        (FR.type_hint[k] || "") + "</i></td><td>" + n[k] + "</td><td>" +
+        (100 * n[k] / tot).toFixed(1) + " %</td><td>" + Math.round(v[k]) +
+        "</td><td>" + (100 * v[k] / totv).toFixed(1) + " %</td></tr>";
+    });
+    return "<table><thead><tr><th>clstrType</th><th>n</th><th>share</th>" +
+      "<th>&Sigma; keV</th><th>of energy</th></tr></thead><tbody>" + rows.join("") +
+      "</tbody><tfoot><tr><td>all</td><td>" + tot + "</td><td>100 %</td><td>" +
+      Math.round(totv) + "</td><td>100 %</td></tr></tfoot></table>";
+  }
+
+  function pickRows() {
+    if (PICK < 0 || !INT.cls[PICK]) {
+      return "<p class=\"hint\">Click a track in the frame to identify it.</p>";
+    }
+    var c = INT.cls[PICK];
+    var kv = [["clstrType", (FR.type_name[c.ty] || c.ty) + " (" + c.ty + ") &middot; " +
+                            (FR.type_hint[c.ty] || "")],
+              ["clstrSize", c.sz + " px"],
+              ["clstrVolume", c.vol + " keV"],
+              ["clstrHeight", c.hgt + " keV (brightest pixel)"],
+              ["clstrLinearity", c.lin],
+              ["clstrLength", c.len + " &micro;m"],
+              ["theta", c.th + "&deg;"],
+              ["at", "t+" + c._t.toFixed(2) + " h"]];
+    return "<table class=\"pick\"><tbody>" + kv.map(function (r) {
+      return "<tr><td>" + r[0] + "</td><td colspan=\"4\">" + r[1] + "</td></tr>";
+    }).join("") + "</tbody></table>";
+  }
+
+  function paintStats() {
+    inspEl.querySelector(".istats").innerHTML = pickRows() + typeRows();
+  }
+
+  /* The inspector has two modes.
+
+       FOLLOW (default)  the window the replay is currently passing, one panel per
+                         visible leg, repainted as the clock moves. This is what the
+                         dose trace is made of, shown while it is being drawn.
+       RANGE             a brushed interval, every window in it integrated into one
+                         frame and frozen, with the full cluster statistics.
+
+     Rebuilding the DOM 60 times a second would be absurd, so the body is rebuilt
+     only when the signature -- mode, leg, window indices -- actually changes;
+     between those the canvases are simply repainted. */
+  function winAt(key, t) {
+    var w = FR && FR.legs[key];
+    if (!w || !w.length) return -1;
+    var k = 0, i;
+    for (i = 0; i < w.length; i++) { if (w[i].t <= t) k = i; else break; }
+    return k;
+  }
+
+  function unitsNow() {
+    if (!FR) return [];
+    if (SELR) {
+      var L = legs.filter(function (l) { return l.key === SELR.key; })[0];
+      var wins = FR.legs[SELR.key].filter(function (w) {
+        return w.t >= SELR.t0 && w.t <= SELR.t1;
+      });
+      if (!L || !wins.length) return [];
+      return [{ leg: L, wins: wins,
+                label: SELR.t0.toFixed(2) + "\u2013" + SELR.t1.toFixed(2) + " h",
+                sig: SELR.key + ":" + SELR.t0.toFixed(3) + ":" + SELR.t1.toFixed(3) }];
+    }
+    /* The live detector belongs to ONE flight. With all three shown the view is a
+       comparison, and three sensor squares next to it are noise; there, the
+       inspector appears only when a range is deliberately brushed.
+
+       A single 20 s window holds ~20 clusters, which on a 256x256 sensor is a
+       nearly black square -- true, but unreadable as an animation. Follow mode
+       therefore integrates a TRAILING interval ending at the playhead: enough
+       frames to see a track field, still moving with the clock, and still
+       emptying out on the ground where the measurement really is near zero. */
+    if (SEL === null) return [];
+    return visible().map(function (L) {
+      var all = FR.legs[L.key], wins = [], i;
+      for (i = 0; i < all.length; i++) {
+        if (all[i].t <= T && all[i].t >= T - TRAIL_H) wins.push(all[i]);
+      }
+      if (!wins.length) {
+        var k = winAt(L.key, T);
+        if (k < 0) return null;
+        wins = [all[k]];
+      }
+      return { leg: L, wins: wins,
+               label: "t+" + wins[wins.length - 1].t.toFixed(2) + " h",
+               sig: L.key + ":" + wins[0].t.toFixed(3) + ":" + wins.length };
+    }).filter(Boolean);
+  }
+
+  var TRAIL_H = 12 / 60;          // trailing interval the follow view integrates
+  var lastSig = "";
+
+  function renderInspector(force) {
+    var units = unitsNow();
+    if (!units.length) { inspEl.hidden = true; lastSig = ""; return; }
+    var sig = (SELR ? "R|" : "F|") + units.map(function (u) { return u.sig; }).join(",");
+    if (sig === lastSig && !force) { return; }
+    lastSig = sig;
+
+    inspEl.hidden = false;
+    inspEl.className = "insp zoomed";
+    inspEl.style.setProperty("--leg", units[0].leg.col);
+
+    {
+      INT = integrate(units[0].wins);
+      var L = units[0].leg;
+      inspEl.innerHTML =
+        "<div class=\"hd\"><span class=\"t\">" + L.short + " &middot; " +
+        units[0].label + "</span><span class=\"s\">" + INT.nfr +
+        " frames integrated &middot; " + INT.cls.length + " clusters &middot; " +
+        units[0].wins.length + " &times; " + FR.acc_s + " s sampled every " +
+        FR.every_min + " min (" + (FR.duty * 100).toFixed(0) +
+        " % duty) &middot; noisy, hot and burst masked" +
+        (SELR ? " &middot; <button id=\"unsel\">follow replay</button>"
+              : " &middot; trailing " + Math.round(TRAIL_H * 60) + " min") +
+        "</span></div><div class=\"ibody\"><div class=\"iframe\">" +
+        "<canvas width=\"256\" height=\"256\"></canvas>" +
+        "<div class=\"hint\">Click a track to identify it &middot; click empty sensor to resize</div>" +
+        "</div><div class=\"istats\"></div></div>";
+      var cvs = inspEl.querySelector("canvas");
+      drawIntegrated(cvs);
+      paintStats();
+      wireFrameClicks(cvs);
+    }
+  }
+
+  function wireFrameClicks(cvs) {
+    cvs.addEventListener("click", function (ev) {
+      if (!INT) return;
+      var r = cvs.getBoundingClientRect();
+      var sx = Math.floor((ev.clientX - r.left) / r.width * 256);
+      var sy = 255 - Math.floor((ev.clientY - r.top) / r.height * 256);
+      var hit = -1, rad, dx, dy, xx, yy;
+      for (rad = 0; rad <= 4 && hit < 0; rad++) {
+        for (dx = -rad; dx <= rad && hit < 0; dx++) {
+          for (dy = -rad; dy <= rad; dy++) {
+            xx = sx + dx; yy = sy + dy;
+            if (xx < 0 || xx > 255 || yy < 0 || yy > 255) continue;
+            if (INT.idx[yy * 256 + xx] >= 0) { hit = INT.idx[yy * 256 + xx]; break; }
+          }
+        }
+      }
+      if (hit < 0) { inspEl.classList.toggle("zoomed"); return; }
+      PICK = (PICK === hit) ? -1 : hit;
+      drawIntegrated(cvs);
+      paintStats();
+    });
+  }
+
+  inspEl.addEventListener("click", function (ev) {
+    if (ev.target && ev.target.id === "unsel") {
+      SELR = null; PICK = -1;
+      drawTraces(); renderInspector(true);
+    }
+  });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.key === "Escape" && SELR) {
+      SELR = null; PICK = -1;
+      drawTraces(); renderInspector(true);
+    }
+  });
+
+  /* brush: press, drag, release on any profile */
+  function traceTimeAt(L, ev) {
+    var T0 = L.trace, r = T0.cv.getBoundingClientRect();
+    var sc = traceScales();
+    var cx = (ev.clientX - r.left) * (T0.w / r.width);
+    var x0 = PAD.l, x1 = T0.w - PAD.r;
+    var t = (cx - x0) / (x1 - x0) * sc.xmax;
+    return Math.max(0, Math.min(sc.xmax, t));
+  }
+  legs.forEach(function (L) {
+    var cvs = L.trace.cv, dragging = false, anchor = 0;
+    cvs.addEventListener("pointerdown", function (ev) {
+      dragging = true; anchor = traceTimeAt(L, ev);
+      if (cvs.setPointerCapture) cvs.setPointerCapture(ev.pointerId);
+      SELR = { key: L.key, t0: anchor, t1: anchor };
+      drawTraces();
+    });
+    cvs.addEventListener("pointermove", function (ev) {
+      if (!dragging) return;
+      var t = traceTimeAt(L, ev);
+      SELR = { key: L.key, t0: Math.min(anchor, t), t1: Math.max(anchor, t) };
+      drawTraces();
+    });
+    cvs.addEventListener("pointerup", function (ev) {
+      if (!dragging) return;
+      dragging = false;
+      var t = traceTimeAt(L, ev);
+      var a = Math.min(anchor, t), b = Math.max(anchor, t);
+      // a plain click is a point, not a range: open a window around it instead
+      if (b - a < 0.02) { a = Math.max(0, a - 0.05); b = b + 0.05; }
+      SELR = { key: L.key, t0: a, t1: b }; PICK = -1;
+      drawTraces(); renderInspector(true);
+    });
+  });
+
+  /* ── mission chips ──────────────────────────────────────────────────────
+     Radio-like: one mission at a time, or all three. Keys 1/2/3 pick a leg and
+     0 returns to all, which is what a speaker wants mid-talk. */
+  var mrow = document.getElementById("missions"), chips = [];
+  function mkChip(key, label, col) {
+    var b = document.createElement("button");
+    b.className = "chip";
+    b.style.setProperty("--leg", col);
+    b.setAttribute("aria-pressed", key === null ? "true" : "false");
+    b.innerHTML = '<span class="sw"></span>' + label;
+    b.addEventListener("click", function () { select(key); });
+    mrow.appendChild(b);
+    chips.push({ key: key, btn: b });
+    return b;
+  }
+  mkChip(null, "All three", "#E0A33B");
+  legs.forEach(function (L) { mkChip(L.key, L.short, L.col); });
+
+  function select(key) {
+    SEL = key;
+    chips.forEach(function (c) {
+      c.btn.setAttribute("aria-pressed", c.key === SEL ? "true" : "false");
+    });
+    legs.forEach(function (L) {
+      L.row.hidden = !shown(L);
+      L.trace.wrap.hidden = !shown(L);
+    });
+    // the pooled footer is a three-leg statement; it has no meaning under a filter
+    tf.hidden = SEL !== null;
+    Array.prototype.forEach.call(dump.querySelectorAll("tr"), function (tr) {
+      tr.hidden = SEL !== null && tr.getAttribute("data-leg") !== SEL;
+    });
+    recalcSpan();
+    if (SELR && !shown(legs.filter(function (l) { return l.key === SELR.key; })[0] || {})) {
+      SELR = null; PICK = -1;
+    }
+    buildField();                 // the epoch may have changed with the mission
+    flyTo(targetView());
+    sizeTraces(); readouts(); renderInspector(true);
+  }
+
+  document.addEventListener("keydown", function (ev) {
+    if (ev.target && /^(INPUT|TEXTAREA)$/.test(ev.target.tagName)) return;
+    if (ev.key === "0") select(null);
+    else if (ev.key >= "1" && ev.key <= String(legs.length)) select(legs[+ev.key - 1].key);
+    else if (ev.key === " ") { ev.preventDefault(); playBtn.click(); }
+    else return;
+  });
+
+  var zoomBtn = document.getElementById("zoom");
+  zoomBtn.addEventListener("click", function () {
+    ZOOM = !ZOOM;
+    zoomBtn.setAttribute("aria-pressed", ZOOM ? "true" : "false");
+    flyTo(targetView());
+  });
+
+  var loopOn = true, loopBtn = document.getElementById("loop");
+  loopBtn.addEventListener("click", function () {
+    loopOn = !loopOn;
+    loopBtn.setAttribute("aria-pressed", loopOn ? "true" : "false");
+  });
+
+  var last = 0;
+  function frame(ts) {
+    if (!last) last = ts;
+    var dt = Math.min((ts - last) / 1000, 0.1); last = ts;
+    if (stepZoom(dt)) { draw(); }
+    if (playing) {
+      T += dt * SPEEDS[si];
+      if (T >= TMAX) { T = loopOn ? 0 : TMAX; if (!loopOn) setPlaying(false); }
+      draw(); drawTraces(); readouts(); renderInspector();
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ── ledger ────────────────────────────────────────────────────────────── */
+  var tb = document.querySelector("#ledger tbody"), tf = document.querySelector("#ledger tfoot");
+  legs.forEach(function (L) {
+    var tr = document.createElement("tr");
+    tr.innerHTML =
+      '<td><span class="dot" style="background:' + L.col + '"></span>' + L.short + '</td>' +
+      '<td>' + L.flown + '</td><td>' + L.span_h.toFixed(2) + ' h</td>' +
+      '<td>' + L.meas_uGy.toFixed(2) + ' µGy</td>' +
+      '<td>' + L.d5_uGy.toFixed(2) + ' µGy</td>' +
+      '<td style="color:var(--amber-ink)">' + L.ratio.toFixed(2) + '</td>';
+    L.row = tr;
+    tb.appendChild(tr);
+  });
+  tf.innerHTML = '<tr><td>All three</td><td>—</td><td>' + D.totals.hours.toFixed(1) +
+    ' h</td><td>' + D.totals.meas_uGy.toFixed(2) + ' µGy</td><td>' +
+    D.totals.d5_uGy.toFixed(2) + ' µGy</td><td style="color:var(--amber-ink)">' +
+    D.pooled.ratio_med.toFixed(2) + '</td></tr>';
+
+  /* ── caveats — the page states its own limits ──────────────────────────── */
+  /* Only the notes that prevent a WRONG READING survive -- the held-out leg, the
+     quantity difference, the epoch, and the one leg whose absolute rate does not
+     pool. Everything that merely explained the figure has gone. */
+  var reps = (D.repairs || []).length;
+  document.getElementById("caveats").innerHTML =
+    "Measured: 500 µm Si · model: CARI-7A D5, ICRU phantom (×0.76 = quantity conversion) · " +
+    "field 11 km, per-leg solar epoch (" +
+    Object.keys(F.epochs).sort().map(function (k) {
+      return k + " " + F.epochs[k].mv + " MV";
+    }).join(", ") + "), IGRF-2010 cutoffs, 2.5°×5° grid · " +
+    "flown 23 Jan / 10 Feb / 17 Apr 2026, replayed on one clock · " +
+    "SYD→LAX absolute rate carries a threshold offset — its ratio pools, its µGy/h does not · " +
+    D.heldout.label + " held out (detector on ~2 h late, ratio " +
+    D.heldout.ratio.toFixed(2) + ") · ADS-B gaps interpolated" +
+    (reps ? " · 1 dateline position repaired" : "");
+
+  /* ── table view ────────────────────────────────────────────────────────── */
+  var dump = document.querySelector("#dump tbody"), rows = [];
+  legs.forEach(function (L) {
+    var tr = L.track, next = 0, i;
+    for (i = 0; i < tr.t.length; i++) {
+      if (tr.t[i] < next) continue;
+      next = tr.t[i] + 0.5;
+      rows.push('<tr data-leg="' + L.key + '"><td><span class="dot" style="background:' +
+        L.col + '"></span>' + L.short +
+        '</td><td>' + tr.t[i].toFixed(2) + '</td><td>' + tr.lat[i].toFixed(2) +
+        '</td><td>' + tr.lon[i].toFixed(2) + '</td><td>' + (tr.alt[i] / 1000).toFixed(2) +
+        '</td><td>' + tr.geo[i].toFixed(1) + '</td><td>' + tr.dose[i].toFixed(3) +
+        '</td><td>' + tr.cum[i].toFixed(2) + '</td><td>' +
+        sample(F.epochs[L.epoch || F.default_epoch].dose,
+               tr.lat[i], tr.lon[i]).toFixed(2) + '</td></tr>');
+    }
+  });
+  dump.innerHTML = rows.join("");
+
+
+  /* #abu_syd / #syd_abu / #syd_lax opens straight on that mission, so a talk can
+     link to one flight instead of arriving at the world view and clicking. */
+  var hash = (location.hash || "").replace("#", "");
+  if (hash && legs.some(function (l) { return l.key === hash; })) SEL = hash;
+
+  buildField();
+  recalcSpan();
+  window.addEventListener("resize", resize);
+  resize();
+  if (SEL) select(SEL);                 // sync chips, cards, ledger and span
+  flyTo(targetView(), true);            // no fly-in on first paint
+  resize();
+  sizeTraces();
+  readouts();
+  renderInspector(true);          // the detector is live from the first frame
+
+  // A viewer who asked not to be moved gets the finished state, not an empty map.
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    T = TMAX; setPlaying(false); draw(); drawTraces(); readouts();
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

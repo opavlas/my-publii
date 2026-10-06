@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Two stratospheric balloon flights replayed from the pad through burst, showing the Regener-Pfotzer maximum measured in silicon against PARMA.">
+<title>The Pfotzer Maximum</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* ───────────────────────────────────────────────────────────────────────────
+   The Pfotzer Maximum — the stratospheric-balloon half of the campaign.
+
+   Same world as the airliner page, and the same single rule:
+       SLATE  = a modelled quantity
+       AMBER  = a measured quantity
+   Mission identity is carried by MARKER and LINE STYLE, never by taking one of
+   those two colours, because which mission a point belongs to is a different
+   question from whether it was measured or computed.
+
+   The geometry is the opposite of the airliner's, and the layout follows: a leg
+   is many sites at one altitude, a balloon is one site and many altitudes. There
+   is no map here because there is no lat/lon in either log, and inventing one
+   would be a lie. Altitude is the axis.
+   ─────────────────────────────────────────────────────────────────────────── */
+:root{
+  --ground:#070B10; --ground-2:#0B1016;
+  --panel:#121A24;  --panel-2:#0F161E;
+  --rule:#22303D;   --rule-soft:#1A2531;
+  --ink:#E6EDF4;    --ink-2:#93A6B8; --ink-3:#64788A;
+  --amber:#E0A33B;  --amber-ink:#F3C85F; --amber-dim:#8C6520;
+  --slate:#7FA3BE;  --slate-dim:#4E6B83;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{font-size:16px}
+body{
+  margin:0; background:var(--ground); color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  -webkit-font-smoothing:antialiased; line-height:1.5;
+}
+h1,h2{font-family:Archivo,"Arial Narrow",system-ui,sans-serif;
+  margin:0; letter-spacing:-.015em; text-wrap:balance}
+.wrap{max-width:78rem; margin:0 auto; padding:1.2rem 1.5rem 4rem;
+  display:flex; flex-direction:column; gap:1.5rem}
+
+/* ── campaign switch ────────────────────────────────────────────────────── */
+.nav{display:flex; gap:.4rem; align-items:center; flex-wrap:wrap;
+  border-bottom:1px solid var(--rule); padding-bottom:.7rem}
+.nav a{font-family:"IBM Plex Mono",monospace; font-size:.68rem; letter-spacing:.12em;
+  text-transform:uppercase; text-decoration:none; color:var(--ink-3);
+  border:1px solid var(--rule); border-radius:2px; padding:.4rem .75rem;
+  transition:color .15s,border-color .15s,background .15s}
+.nav a:hover{color:var(--ink); border-color:var(--amber-dim)}
+.nav a[aria-current="page"]{color:var(--amber-ink); border-color:var(--amber);
+  background:#101A22}
+.nav a:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+
+.eyebrow{font-family:"IBM Plex Mono",monospace; font-size:.7rem; font-weight:500;
+  letter-spacing:.2em; text-transform:uppercase; color:var(--amber)}
+h1{font-size:clamp(1.8rem,3.6vw,2.7rem); font-weight:700; line-height:1.05; margin-top:.4rem}
+
+/* ── the profile stage ──────────────────────────────────────────────────── */
+.stage{border:1px solid var(--rule); border-radius:3px; background:var(--ground-2);
+  padding:.9rem 1rem .7rem; display:flex; flex-direction:column; gap:.5rem}
+.stage .hd{display:flex; align-items:baseline; justify-content:space-between;
+  gap:1rem; flex-wrap:wrap}
+.stage .hd h2{font-size:1rem; font-weight:600}
+.key{font-family:"IBM Plex Mono",monospace; font-size:.6rem; color:var(--ink-3);
+  display:flex; gap:.9rem; flex-wrap:wrap}
+.key i{font-style:normal; display:inline-flex; align-items:center; gap:.3rem}
+.key i::before{content:""; width:14px; height:2px; background:currentColor}
+#prof{display:block; width:100%; height:min(58vh,30rem)}
+
+/* ── controls ───────────────────────────────────────────────────────────── */
+.missions,.transport{display:flex; align-items:center; gap:.6rem; flex-wrap:wrap}
+.lbl{font-family:"IBM Plex Mono",monospace; font-size:.6rem; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--ink-3); margin-right:.2rem}
+button{font-family:"IBM Plex Mono",monospace; font-size:.72rem; letter-spacing:.1em;
+  text-transform:uppercase; color:var(--ink); background:var(--panel);
+  border:1px solid var(--rule); border-radius:2px; padding:.45rem .8rem;
+  cursor:pointer; transition:background .15s,border-color .15s}
+button:hover{background:var(--panel-2); border-color:var(--amber-dim)}
+button[aria-pressed="true"]{border-color:var(--amber); color:var(--amber-ink)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+.chip{display:inline-flex; align-items:center; gap:.45rem}
+.chip .sw{width:.6rem; height:.6rem; border-radius:50%; background:var(--m); flex:0 0 auto}
+button.chip[aria-pressed="true"]{border-color:var(--m); color:var(--ink); background:#101A22}
+button.chip[aria-pressed="false"] .sw{opacity:.4}
+input[type=range]{flex:1; min-width:12rem; accent-color:var(--amber); background:transparent; cursor:pointer}
+.tclock{font-family:"IBM Plex Mono",monospace; font-size:.92rem; color:var(--amber-ink);
+  font-variant-numeric:tabular-nums; min-width:5.2rem}
+[hidden]{display:none!important}
+
+/* ── per-mission time panels ────────────────────────────────────────────── */
+.traces{display:flex; flex-direction:column; gap:.7rem}
+.trace{background:var(--panel-2); border:1px solid var(--rule); border-radius:3px;
+  border-left:2px solid var(--m); padding:.6rem .8rem .5rem;
+  display:flex; flex-direction:column; gap:.35rem}
+.trace .hd{display:flex; align-items:baseline; justify-content:space-between; gap:1rem; flex-wrap:wrap}
+.trace .nm{font-family:Archivo,sans-serif; font-weight:600; font-size:.88rem; color:var(--m)}
+.trace .nm .unit{font-family:"IBM Plex Mono",monospace; font-size:.6rem; font-weight:400;
+  color:var(--ink-3); letter-spacing:0}
+.trace canvas{display:block; width:100%; height:228px; cursor:crosshair}
+.hint{font-family:"IBM Plex Mono",monospace; font-size:.62rem; color:var(--ink-3)}
+
+/* ── frame inspector ────────────────────────────────────────────────────── */
+.insp{background:var(--panel-2); border:1px solid var(--rule); border-radius:3px;
+  border-top:2px solid var(--m,var(--amber)); padding:.9rem 1rem;
+  display:flex; flex-direction:column; gap:.8rem}
+.insp .hd{display:flex; align-items:baseline; justify-content:space-between; gap:1rem; flex-wrap:wrap}
+.insp .hd .t{font-family:Archivo,sans-serif; font-weight:600; font-size:.95rem; color:var(--m,var(--amber))}
+.insp .hd .s{font-family:"IBM Plex Mono",monospace; font-size:.6rem; color:var(--ink-3)}
+.insp .hd button{font-size:.6rem; padding:.2rem .5rem; margin-left:.4rem}
+.ibody{display:flex; flex-direction:column; gap:.8rem; align-items:center}
+.ibody canvas{display:block; width:min(100%,34rem); aspect-ratio:1; background:#05080C;
+  border:1px solid var(--rule); image-rendering:pixelated; cursor:crosshair}
+.istats{width:100%; max-width:60rem; display:flex; flex-direction:column; gap:.6rem; overflow-x:auto}
+
+/* ── tables ─────────────────────────────────────────────────────────────── */
+.ledger{background:var(--panel-2); border:1px solid var(--rule); border-radius:3px;
+  padding:1rem 1.1rem; display:flex; flex-direction:column; gap:.8rem}
+table{border-collapse:collapse; width:100%; font-family:"IBM Plex Mono",monospace;
+  font-size:.72rem; font-variant-numeric:tabular-nums}
+th,td{text-align:right; padding:.35rem .45rem; border-bottom:1px solid var(--rule-soft)}
+th:first-child,td:first-child{text-align:left}
+thead th{color:var(--ink-3); font-weight:500; font-size:.6rem; letter-spacing:.1em;
+  text-transform:uppercase; border-bottom:1px solid var(--rule)}
+td i{font-style:normal; color:var(--ink-3)}
+.istats table.pick td:first-child{color:var(--ink-3)}
+.istats table.pick td:last-child{color:var(--amber-ink)}
+.istats table.pick{border:1px solid var(--rule); border-radius:2px}
+.dot{display:inline-block; width:.55rem; height:.55rem; border-radius:50%;
+  margin-right:.45rem; vertical-align:baseline}
+.caveats{font-size:.7rem; line-height:1.6; color:var(--ink-3)}
+details{border-top:1px solid var(--rule-soft); padding-top:.7rem}
+summary{cursor:pointer; font-family:"IBM Plex Mono",monospace; font-size:.68rem;
+  letter-spacing:.1em; text-transform:uppercase; color:var(--ink-3)}
+summary:hover{color:var(--amber)}
+.scroll{overflow-x:auto; margin-top:.7rem}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav class="nav">
+    <a href="./">Airplane</a>
+    <a href="balloons.html" aria-current="page">Stratospheric balloons</a>
+  </nav>
+
+  <header>
+    <div class="eyebrow">Timepix2 · two balloon flights · 34.4 km and 27.3 km</div>
+    <h1>The Pfotzer Maximum</h1>
+  </header>
+
+  <section class="stage">
+    <div class="hd">
+      <h2 id="stitle">Dose rate through the atmosphere</h2>
+      <span class="key">
+        <i style="color:#E0A33B">measured Si</i>
+        <i style="color:#7FA3BE">PARMA → Si (W from Oulu)</i>
+        <i style="color:#4E6B83">CARI-7A (phantom)</i>
+        <span style="color:#64788A">solid = ASTRABAX · dashed = OURANOS</span>
+      </span>
+    </div>
+    <canvas id="prof"></canvas>
+    <div class="hint" id="shint"></div>
+  </section>
+
+  <div class="missions" id="missions"><span class="lbl">Mission</span></div>
+
+  <div class="transport">
+    <button id="play" aria-pressed="true">Pause</button>
+    <span class="tclock" id="tclock">00:00</span>
+    <input type="range" id="scrub" min="0" max="1000" value="0" step="1" aria-label="Replay time">
+    <button id="speed">15 min / s</button>
+    <button id="loop" aria-pressed="true">Loop</button>
+    <button id="quant" aria-pressed="false">Show flux</button>
+  </div>
+
+  <section class="traces" id="traces"></section>
+  <p class="hint">Drag across a profile to inspect the detector frames from that interval.</p>
+  <section class="insp" id="insp" hidden></section>
+
+  <section class="ledger">
+    <div class="scroll"><table id="ledger">
+      <thead><tr><th>Mission</th><th>Flown</th><th>Site</th><th>THL</th><th>Apogee</th>
+        <th>Peak count rate</th><th>at</th><th>Dose peak at</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </section>
+
+  <section class="caveats" id="caveats"></section>
+
+  <details>
+    <summary>Table view — the measured dose profile</summary>
+    <div class="scroll"><table id="dump">
+      <thead><tr><th>Mission</th><th>altitude [km]</th><th>measured [µGy/h]</th>
+        <th>± σ</th><th>PARMA → Si</th><th>meas/model</th></tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </details>
+</div>
+
+<script src="balloon_data.js"></script>
+<script>
+(function () {
+  "use strict";
+  var B = window.BALLOON;
+  if (!B) { document.getElementById("stitle").textContent = "balloon_data.js failed to load"; return; }
+
+  var AMBER = [[74, 52, 22], [140, 101, 32], [224, 163, 59], [251, 227, 166]];
+  var FRAMP = [[12, 9, 4], [92, 56, 14], [224, 163, 59], [247, 214, 134], [255, 246, 226]];
+  var ETOP = 120;
+  function ramp(stops, u) {
+    u = u < 0 ? 0 : u > 1 ? 1 : u;
+    var f = u * (stops.length - 1), i = Math.min(Math.floor(f), stops.length - 2), k = f - i;
+    var a = stops[i], b = stops[i + 1];
+    return [a[0] + (b[0] - a[0]) * k, a[1] + (b[1] - a[1]) * k, a[2] + (b[2] - a[2]) * k];
+  }
+  function rgb(c) { return "rgb(" + (c[0] | 0) + "," + (c[1] | 0) + "," + (c[2] | 0) + ")"; }
+
+  var MS = B.missions, SEL = null, QUANT = "tid";
+  var T = 0, playing = true, SPEEDS = [5, 15, 30, 60], si = 1, loopOn = true;
+  function shown(m) { return SEL === null || m.key === SEL; }
+  function visible() { return MS.filter(shown); }
+  var TMAX = 0;
+  function recalcSpan() {
+    TMAX = Math.max.apply(null, visible().map(function (m) { return m.ascent.span_h; }));
+    if (T > TMAX) T = TMAX;
+  }
+
+  /* hits are one 1 s frame every 5 s and Poisson-noisy; smooth for the line and
+     keep the raw points behind it, exactly as the airliner page does with dose */
+  function smooth(a, w) {
+    var out = new Array(a.length), i, j, s, n, h = w >> 1;
+    for (i = 0; i < a.length; i++) {
+      s = 0; n = 0;
+      for (j = Math.max(0, i - h); j <= Math.min(a.length - 1, i + h); j++) { s += a[j]; n++; }
+      out[i] = s / n;
+    }
+    return out;
+  }
+  MS.forEach(function (m) {
+    // dose rate, binned from the masked clusters -- NOT the hit count. One alpha
+    // and one soft photon are a hit each and differ by ~1000x in energy, so a
+    // count rate is a different curve from the thing the stage above plots.
+    var d = m.ascent.dose_t || { t: [], v: [] };
+    m.dose = { t: d.t, v: d.v, s: smooth(d.v, 5) };
+    m.tgt = B.targets[m.name] || {};
+  });
+
+  function at(arr, t) {
+    var lo = 0, hi = arr.length - 1, mid;
+    if (t <= arr[0]) return 0;
+    if (t >= arr[hi]) return hi;
+    while (hi - lo > 1) { mid = (lo + hi) >> 1; if (arr[mid] <= t) lo = mid; else hi = mid; }
+    return lo;
+  }
+  function interp(xs, ys, x) {              // xs ascending
+    if (!xs || !xs.length) return null;
+    if (x <= xs[0]) return ys[0];
+    if (x >= xs[xs.length - 1]) return ys[ys.length - 1];
+    var i = at(xs, x);
+    var k = (x - xs[i]) / (xs[i + 1] - xs[i]);
+    return ys[i] + (ys[i + 1] - ys[i]) * k;
+  }
+
+  /* ── the stage: dose (or flux) against ALTITUDE ──────────────────────────
+     Altitude is vertical because that is how a reader pictures the atmosphere,
+     and because the answer -- the Regener-Pfotzer maximum -- is a height. */
+  var pc = document.getElementById("prof"), pg = pc.getContext("2d"), PW = 0, PH = 0;
+  var PPAD = { l: 58, r: 18, t: 14, b: 38 };
+
+  function qspec(m) {
+    return QUANT === "tid"
+      ? { meas: m.profile.tid, unit: "µGy h⁻¹", what: "absorbed dose rate in 500 µm Si",
+          models: [["parma", "#7FA3BE", []], ["cari", "#4E6B83", [4, 3]]],
+          peakAlt: m.tgt.tid_peak_alt }
+      : { meas: m.profile.flux, unit: "cm⁻² s⁻¹", what: "particle flux",
+          models: [], peakAlt: m.tgt.flux_peak_alt };
+  }
+
+  function stageScales() {
+    var hi = 0, altHi = 0;
+    visible().forEach(function (m) {
+      var s = qspec(m);
+      if (s.meas) {
+        s.meas.v.forEach(function (v, i) {
+          var e = s.meas.e ? s.meas.e[i] : 0;
+          if (v + e > hi) hi = v + e;
+        });
+        s.meas.alt.forEach(function (a) { if (a > altHi) altHi = a; });
+      }
+      s.models.forEach(function (md) {
+        var c = m.profile[md[0]];
+        if (c) c.v.forEach(function (v) { if (v > hi) hi = v; });
+      });
+      if (m.ascent.apogee_km > altHi) altHi = m.ascent.apogee_km;
+    });
+    return { xmax: hi * 1.08 || 1, ymax: Math.ceil((altHi + 2) / 5) * 5 };
+  }
+
+  function drawStage() {
+    if (!PW) return;
+    var sc = stageScales();
+    var x0 = PPAD.l, x1 = PW - PPAD.r, y0 = PPAD.t, y1 = PH - PPAD.b;
+    var X = function (v) { return x0 + v / sc.xmax * (x1 - x0); };
+    var Y = function (a) { return y1 - a / sc.ymax * (y1 - y0); };
+
+    pg.clearRect(0, 0, PW, PH);
+    pg.font = '10px "IBM Plex Mono",monospace';
+
+    // altitude grid, every 5 km
+    for (var a = 0; a <= sc.ymax; a += 5) {
+      pg.strokeStyle = a === 0 ? "rgba(214,230,242,.22)" : "rgba(214,230,242,.085)";
+      pg.lineWidth = 1;
+      pg.beginPath(); pg.moveTo(x0, Y(a)); pg.lineTo(x1, Y(a)); pg.stroke();
+      pg.fillStyle = "#64788A"; pg.textAlign = "right"; pg.textBaseline = "middle";
+      pg.fillText(a + " km", x0 - 7, Y(a));
+    }
+    // value grid
+    var step = sc.xmax > 6 ? 2 : sc.xmax > 3 ? 1 : sc.xmax > 1.2 ? 0.5 : 0.2, v;
+    pg.textAlign = "center"; pg.textBaseline = "top";
+    for (v = 0; v <= sc.xmax; v += step) {
+      pg.strokeStyle = v === 0 ? "rgba(214,230,242,.22)" : "rgba(214,230,242,.085)";
+      pg.beginPath(); pg.moveTo(X(v), y0); pg.lineTo(X(v), y1); pg.stroke();
+      pg.fillStyle = "#64788A";
+      pg.fillText(step < 1 ? v.toFixed(1) : String(v), X(v), y1 + 6);
+    }
+    pg.fillStyle = "#93A6B8";
+    pg.fillText(qspec(MS[0]).unit, (x0 + x1) / 2, y1 + 20);
+
+    visible().forEach(function (m, mi) {
+      var s = qspec(m), dash = mi % 2 ? [5, 4] : [];
+
+      s.models.forEach(function (md) {
+        var c = m.profile[md[0]];
+        if (!c) return;
+        pg.strokeStyle = md[1]; pg.lineWidth = 1.6; pg.setLineDash(dash);
+        pg.beginPath();
+        c.alt.forEach(function (al, i) {
+          var fx = X(c.v[i]), fy = Y(al);
+          i ? pg.lineTo(fx, fy) : pg.moveTo(fx, fy);
+        });
+        pg.stroke(); pg.setLineDash([]);
+      });
+
+      if (s.meas) {
+        // error bars first, then the line, then the points
+        pg.strokeStyle = "rgba(224,163,59,.35)"; pg.lineWidth = 1;
+        s.meas.alt.forEach(function (al, i) {
+          var e = s.meas.e ? s.meas.e[i] : 0;
+          if (!e) return;
+          pg.beginPath();
+          pg.moveTo(X(Math.max(0, s.meas.v[i] - e)), Y(al));
+          pg.lineTo(X(s.meas.v[i] + e), Y(al));
+          pg.stroke();
+        });
+        pg.fillStyle = "#E0A33B";
+        s.meas.alt.forEach(function (al, i) {
+          pg.beginPath();
+          if (mi % 2) {
+            pg.rect(X(s.meas.v[i]) - 1.7, Y(al) - 1.7, 3.4, 3.4);
+          } else {
+            pg.arc(X(s.meas.v[i]), Y(al), 1.9, 0, 6.2832);
+          }
+          pg.fill();
+        });
+      }
+
+      // the published Pfotzer maximum for this mission and quantity
+      if (s.peakAlt) {
+        pg.strokeStyle = "rgba(91,227,200,.5)"; pg.lineWidth = 1; pg.setLineDash([2, 3]);
+        pg.beginPath(); pg.moveTo(x0, Y(s.peakAlt)); pg.lineTo(x1, Y(s.peakAlt)); pg.stroke();
+        pg.setLineDash([]);
+        pg.fillStyle = "#5BE3C8"; pg.textAlign = "left"; pg.textBaseline = "bottom";
+        pg.fillText(m.short + " peak " + s.peakAlt.toFixed(1) + " km", x0 + 5, Y(s.peakAlt) - 2);
+      }
+
+      // where the balloon is now
+      var k = at(m.ascent.t, Math.min(T, m.ascent.span_h));
+      var alt = m.ascent.alt[k] / 1000;
+      var val = s.meas ? interp(s.meas.alt, s.meas.v, alt) : null;
+      pg.strokeStyle = "rgba(243,200,95,.75)"; pg.lineWidth = 1;
+      pg.beginPath(); pg.moveTo(x0, Y(alt)); pg.lineTo(x1, Y(alt)); pg.stroke();
+      if (val != null) {
+        pg.fillStyle = "#F3C85F";
+        pg.beginPath(); pg.arc(X(val), Y(alt), 4.2, 0, 6.2832); pg.fill();
+        pg.fillStyle = "#0B1016";
+        pg.beginPath(); pg.arc(X(val), Y(alt), 1.6, 0, 6.2832); pg.fill();
+        pg.fillStyle = "#F3C85F"; pg.textAlign = "left"; pg.textBaseline = "middle";
+        pg.font = '600 11px "IBM Plex Mono",monospace';
+        var lx = X(val) + 9, txt = alt.toFixed(1) + " km · " + val.toFixed(2);
+        if (lx + pg.measureText(txt).width > x1) lx = X(val) - 9 - pg.measureText(txt).width;
+        pg.fillText(txt, lx, Y(alt) - 9 - mi * 13);
+        pg.font = '10px "IBM Plex Mono",monospace';
+      }
+    });
+  }
+
+  /* ── per-mission time panels ─────────────────────────────────────────────
+     The stage answers "how does it vary with height". These answer "what did
+     the detector actually count, second by second" -- the raw hit rate, which
+     is the only genuinely time-ordered measurement the balloons recorded. */
+  var tracesEl = document.getElementById("traces");
+  var PAD = { l: 44, r: 12, t: 12, b: 28 }, ALT_H = 48, GAP_H = 12;
+
+  MS.forEach(function (m) {
+    var w = document.createElement("div");
+    w.className = "trace";
+    w.style.setProperty("--m", m.color);
+    w.innerHTML = '<div class="hd"><span class="nm">' + m.short +
+      ' <span class="unit">' + m.flown + ' · ' + m.site + ' · THL ' + m.thl +
+      ' keV · apogee ' + m.ascent.apogee_km.toFixed(2) + ' km · ' +
+      m.ascent.span_h.toFixed(2) + ' h</span></span>' +
+      '<span class="key"><i style="color:#E0A33B">dose rate µGy h⁻¹</i>' +
+      '<i style="color:#7FA3BE">altitude</i></span></div>';
+    var c = document.createElement("canvas");
+    w.appendChild(c);
+    tracesEl.appendChild(w);
+    m.tr = { wrap: w, cv: c, ctx: c.getContext("2d"),
+             base: document.createElement("canvas"), w: 0, h: 0 };
+  });
+
+  function trScales() {
+    var hi = 0, ahi = 0;
+    visible().forEach(function (m) {
+      m.dose.s.forEach(function (v) { if (v > hi) hi = v; });
+      if (m.ascent.apogee_km > ahi) ahi = m.ascent.apogee_km;
+    });
+    return { xmax: TMAX, ymax: hi * 1.15 || 1, amax: Math.ceil(ahi / 5) * 5 * 1000 };
+  }
+
+  function buildTrace(m, sc) {
+    var t = m.tr, cw = t.w, ch = t.h;
+    if (!cw) return;
+    var dpr = Math.min(window.devicePixelRatio || 1, 2);
+    t.base.width = cw * dpr; t.base.height = ch * dpr;
+    var g = t.base.getContext("2d");
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.clearRect(0, 0, cw, ch);
+    var x0 = PAD.l, x1 = cw - PAD.r;
+    var dy0 = PAD.t, dy1 = ch - PAD.b - ALT_H - GAP_H;
+    var ay0 = ch - PAD.b - ALT_H, ay1 = ch - PAD.b;
+    var X = function (v) { return x0 + v / sc.xmax * (x1 - x0); };
+    var Y = function (v) { return dy1 - Math.min(v, sc.ymax) / sc.ymax * (dy1 - dy0); };
+    var A = function (v) { return ay1 - Math.min(v / sc.amax, 1) * (ay1 - ay0); };
+    g.font = '10px "IBM Plex Mono",monospace';
+
+    // a nice step near ymax/5, so the axis carries ~5 labels whatever the range
+    var raw = sc.ymax / 4, mag = Math.pow(10, Math.floor(Math.log(raw) / Math.LN10));
+    var n = raw / mag, step = (n >= 5 ? 5 : n >= 2 ? 2 : 1) * mag, v;
+    var dp = step < 1 ? (step < 0.5 ? 1 : 1) : 0;
+    for (v = 0; v <= sc.ymax + 1e-9; v += step) {
+      g.strokeStyle = v === 0 ? "rgba(214,230,242,.2)" : "rgba(214,230,242,.085)";
+      g.beginPath(); g.moveTo(x0, Y(v)); g.lineTo(x1, Y(v)); g.stroke();
+      g.fillStyle = "#64788A"; g.textAlign = "right"; g.textBaseline = "middle";
+      g.fillText(v.toFixed(dp), x0 - 6, Y(v));
+    }
+    var hs = sc.xmax > 3 ? 1 : 0.5, h;
+    g.textAlign = "center"; g.textBaseline = "top";
+    for (h = 0; h <= sc.xmax + 1e-9; h += hs) {
+      g.strokeStyle = "rgba(214,230,242,.085)";
+      g.beginPath(); g.moveTo(X(h), dy0); g.lineTo(X(h), ay1); g.stroke();
+      g.fillStyle = "#64788A"; g.fillText(h + " h", X(h), ay1 + 5);
+    }
+
+    // altitude band, with the apogee marked -- the turnaround is the one moment
+    // every balloon flight has and no airliner leg does
+    g.beginPath(); g.moveTo(X(m.ascent.t[0]), ay1);
+    m.ascent.t.forEach(function (tt, i) { g.lineTo(X(tt), A(m.ascent.alt[i])); });
+    g.lineTo(X(m.ascent.t[m.ascent.t.length - 1]), ay1); g.closePath();
+    g.fillStyle = "rgba(127,163,190,.2)"; g.fill();
+    g.strokeStyle = "rgba(127,163,190,.5)"; g.lineWidth = 1;
+    g.beginPath();
+    m.ascent.t.forEach(function (tt, i) {
+      i ? g.lineTo(X(tt), A(m.ascent.alt[i])) : g.moveTo(X(tt), A(m.ascent.alt[i]));
+    });
+    g.stroke();
+    // launch, so the ground stretch before it reads as a baseline rather than as
+    // the start of the climb
+    if (m.ascent.launch_t) {
+      var lx = X(m.ascent.launch_t);
+      g.fillStyle = "rgba(224,163,59,.07)";
+      g.fillRect(x0, dy0, lx - x0, ay1 - dy0);
+      g.strokeStyle = "rgba(224,163,59,.55)"; g.setLineDash([2, 3]);
+      g.beginPath(); g.moveTo(lx, dy0); g.lineTo(lx, ay1); g.stroke();
+      g.setLineDash([]);
+      g.fillStyle = "#E0A33B"; g.textAlign = "left"; g.textBaseline = "bottom";
+      g.fillText("launch", lx + 4, dy0 + 10);
+    }
+    var ai = m.ascent.apogee_i;
+    g.strokeStyle = "rgba(91,227,200,.65)"; g.setLineDash([2, 3]);
+    g.beginPath(); g.moveTo(X(m.ascent.t[ai]), dy0); g.lineTo(X(m.ascent.t[ai]), ay1); g.stroke();
+    g.setLineDash([]);
+    g.fillStyle = "#5BE3C8"; g.textAlign = "center"; g.textBaseline = "bottom";
+    g.fillText("burst " + m.ascent.apogee_km.toFixed(1) + " km", X(m.ascent.t[ai]), dy0 + 10);
+    g.fillStyle = "#64788A"; g.textAlign = "right"; g.textBaseline = "top";
+    g.fillText((sc.amax / 1000) + " km", x0 - 6, ay0 - 2);
+    g.textBaseline = "bottom"; g.fillText("0", x0 - 6, ay1);
+
+    g.fillStyle = "rgba(224,163,59,.3)";
+    m.dose.t.forEach(function (tt, i) {
+      if (m.dose.v[i] > sc.ymax) return;
+      g.beginPath(); g.arc(X(tt), Y(m.dose.v[i]), 1.1, 0, 6.2832); g.fill();
+    });
+    g.strokeStyle = "#E0A33B"; g.lineWidth = 1.9;
+    g.beginPath();
+    m.dose.t.forEach(function (tt, i) {
+      i ? g.lineTo(X(tt), Y(m.dose.s[i])) : g.moveTo(X(tt), Y(m.dose.s[i]));
+    });
+    g.stroke();
+  }
+
+  function sizeTraces() {
+    var sc = trScales();
+    visible().forEach(function (m) {
+      var t = m.tr, r = t.cv.getBoundingClientRect();
+      var dpr = Math.min(window.devicePixelRatio || 1, 2);
+      t.w = Math.round(r.width) || 600; t.h = 228;
+      t.cv.width = t.w * dpr; t.cv.height = t.h * dpr;
+      t.ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      buildTrace(m, sc);
+    });
+    drawTraces();
+  }
+
+  function drawTraces() {
+    var sc = trScales();
+    visible().forEach(function (m) {
+      var t = m.tr, g = t.ctx, cw = t.w, ch = t.h;
+      if (!cw) return;
+      g.clearRect(0, 0, cw, ch);
+      g.drawImage(t.base, 0, 0, cw, ch);
+      var x0 = PAD.l, x1 = cw - PAD.r;
+      var dy0 = PAD.t, dy1 = ch - PAD.b - ALT_H - GAP_H;
+      var Y = function (v) { return dy1 - Math.min(v, sc.ymax) / sc.ymax * (dy1 - dy0); };
+      var x = x0 + Math.min(T, sc.xmax) / sc.xmax * (x1 - x0);
+
+      if (SELR && SELR.key === m.key && SELR.t1 > SELR.t0) {
+        var sa = x0 + SELR.t0 / sc.xmax * (x1 - x0), sb = x0 + SELR.t1 / sc.xmax * (x1 - x0);
+        g.fillStyle = "rgba(224,163,59,.13)";
+        g.fillRect(sa, dy0, Math.max(sb - sa, 1), ch - PAD.b - dy0);
+        g.strokeStyle = "rgba(224,163,59,.55)"; g.lineWidth = 1;
+        g.beginPath(); g.moveTo(sa, dy0); g.lineTo(sa, ch - PAD.b);
+        g.moveTo(sb, dy0); g.lineTo(sb, ch - PAD.b); g.stroke();
+      }
+      g.strokeStyle = "rgba(243,200,95,.85)"; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(x, dy0); g.lineTo(x, ch - PAD.b); g.stroke();
+
+      if (T <= m.ascent.span_h && m.dose.t.length) {
+        var k = at(m.dose.t, T), ka = at(m.ascent.t, T);
+        g.fillStyle = "#E0A33B";
+        g.beginPath(); g.arc(x, Y(m.dose.s[k]), 3.2, 0, 6.2832); g.fill();
+        g.font = '600 11px "IBM Plex Mono",monospace';
+        g.textBaseline = "middle";
+        var txt = m.dose.s[k].toFixed(2) + " µGy/h · " +
+                  (m.ascent.alt[ka] / 1000).toFixed(1) + " km";
+        g.textAlign = x > x1 - 150 ? "right" : "left";
+        g.fillText(txt, x + (x > x1 - 150 ? -7 : 7), dy0 + 8);
+      }
+    });
+  }
+
+  /* ── frame inspector (same contract as the airliner page) ───────────────── */
+  var inspEl = document.getElementById("insp");
+  var SELR = null, INT = null, PICK = -1, TRAIL_H = 6 / 60, lastSig = "";
+
+  function integrate(wins) {
+    var idx = new Int32Array(65536), cls = [], nfr = 0, i, j, w, c, k;
+    idx.fill(-1);
+    for (i = 0; i < wins.length; i++) {
+      w = wins[i]; nfr += w.nfr;
+      for (j = 0; j < w.cl.length; j++) {
+        c = w.cl[j]; c._t = w.t; c._alt = w.alt;
+        var ci = cls.push(c) - 1;
+        for (k = 0; k < c.x.length; k++) idx[c.y[k] * 256 + c.x[k]] = ci;
+      }
+    }
+    return { idx: idx, cls: cls, nfr: nfr };
+  }
+  function drawIntegrated(cvs) {
+    var g = cvs.getContext("2d"), lg = Math.log(1 + ETOP), i, k, c;
+    g.fillStyle = "#05080C"; g.fillRect(0, 0, 256, 256);
+    for (i = 0; i < INT.cls.length; i++) {
+      c = INT.cls[i];
+      for (k = 0; k < c.x.length; k++) {
+        g.fillStyle = rgb(ramp(FRAMP, Math.log(1 + Math.min(c.e[k], ETOP)) / lg));
+        g.fillRect(c.x[k], 255 - c.y[k], 1, 1);
+      }
+    }
+    if (PICK >= 0 && INT.cls[PICK]) {
+      c = INT.cls[PICK];
+      var ax = Math.min.apply(null, c.x), bx = Math.max.apply(null, c.x);
+      var ay = Math.min.apply(null, c.y), by = Math.max.apply(null, c.y);
+      g.strokeStyle = "#5BE3C8"; g.lineWidth = 1;
+      g.strokeRect(ax - 2.5, 255 - by - 2.5, bx - ax + 5, by - ay + 5);
+    }
+  }
+  function typeRows() {
+    var n = {}, v = {}, i, c, t;
+    for (i = 0; i < INT.cls.length; i++) {
+      c = INT.cls[i];
+      n[c.ty] = (n[c.ty] || 0) + 1;
+      v[c.ty] = (v[c.ty] || 0) + c.vol;
+    }
+    var tot = INT.cls.length, totv = 0;
+    for (t in v) totv += v[t];
+    var rows = Object.keys(n).sort(function (a, b) { return v[b] - v[a]; }).map(function (k) {
+      return "<tr><td>" + (B.type_name[k] || ("type " + k)) + " <i>" +
+        (B.type_hint[k] || "") + "</i></td><td>" + n[k] + "</td><td>" +
+        (100 * n[k] / tot).toFixed(1) + " %</td><td>" + Math.round(v[k]) +
+        "</td><td>" + (100 * v[k] / totv).toFixed(1) + " %</td></tr>";
+    });
+    return "<table><thead><tr><th>clstrType</th><th>n</th><th>share</th>" +
+      "<th>&Sigma; keV</th><th>of energy</th></tr></thead><tbody>" + rows.join("") +
+      "</tbody><tfoot><tr><td>all</td><td>" + tot + "</td><td>100 %</td><td>" +
+      Math.round(totv) + "</td><td>100 %</td></tr></tfoot></table>";
+  }
+  function pickRows() {
+    if (PICK < 0 || !INT.cls[PICK]) {
+      return "<p class=\"hint\">Click a track in the frame to identify it.</p>";
+    }
+    var c = INT.cls[PICK];
+    var kv = [["clstrType", (B.type_name[c.ty] || c.ty) + " (" + c.ty + ") &middot; " +
+                            (B.type_hint[c.ty] || "")],
+              ["clstrSize", c.sz + " px"],
+              ["clstrVolume", c.vol + " keV"],
+              ["clstrHeight", c.hgt + " keV (brightest pixel)"],
+              ["clstrLinearity", c.lin],
+              ["clstrLength", c.len + " &micro;m"],
+              ["theta", c.th + "&deg;"],
+              ["at", "t+" + c._t.toFixed(2) + " h &middot; " + (c._alt / 1000).toFixed(1) + " km"]];
+    return "<table class=\"pick\"><tbody>" + kv.map(function (r) {
+      return "<tr><td>" + r[0] + "</td><td colspan=\"4\">" + r[1] + "</td></tr>";
+    }).join("") + "</tbody></table>";
+  }
+  function paintStats() { inspEl.querySelector(".istats").innerHTML = pickRows() + typeRows(); }
+
+  function unitsNow() {
+    if (!B.frames) return [];
+    if (SELR) {
+      var m = MS.filter(function (x) { return x.key === SELR.key; })[0];
+      var wins = (B.frames[SELR.key] || []).filter(function (w) {
+        return w.t >= SELR.t0 && w.t <= SELR.t1;
+      });
+      if (!m || !wins.length) return [];
+      return [{ m: m, wins: wins,
+                label: SELR.t0.toFixed(2) + "–" + SELR.t1.toFixed(2) + " h",
+                sig: SELR.key + ":" + SELR.t0.toFixed(3) + ":" + SELR.t1.toFixed(3) }];
+    }
+    // live view belongs to one mission, as on the airliner page
+    if (SEL === null) return [];
+    var m2 = MS.filter(function (x) { return x.key === SEL; })[0];
+    if (!m2) return [];
+    var all = B.frames[m2.key] || [], wins2 = [], i;
+    for (i = 0; i < all.length; i++) {
+      if (all[i].t <= T && all[i].t >= T - TRAIL_H) wins2.push(all[i]);
+    }
+    if (!wins2.length) return [];
+    var lastw = wins2[wins2.length - 1];
+    return [{ m: m2, wins: wins2,
+              label: "t+" + lastw.t.toFixed(2) + " h · " + (lastw.alt / 1000).toFixed(1) + " km",
+              sig: m2.key + ":" + wins2[0].t.toFixed(3) + ":" + wins2.length }];
+  }
+
+  function renderInspector(force) {
+    var units = unitsNow();
+    if (!units.length) { inspEl.hidden = true; lastSig = ""; return; }
+    var sig = (SELR ? "R|" : "F|") + units[0].sig;
+    if (sig === lastSig && !force) return;
+    lastSig = sig;
+    var u = units[0];
+    INT = integrate(u.wins);
+    inspEl.hidden = false;
+    inspEl.style.setProperty("--m", u.m.color);
+    inspEl.innerHTML =
+      "<div class=\"hd\"><span class=\"t\">" + u.m.short + " &middot; " + u.label +
+      "</span><span class=\"s\">" + INT.nfr + " frames integrated &middot; " +
+      INT.cls.length + " clusters &middot; " + u.wins.length + " &times; " + B.acc_s +
+      " s sampled every " + Math.round(B.every_s) + " s &middot; noisy and hot masked" +
+      (SELR ? " &middot; <button id=\"unsel\">follow replay</button>"
+            : " &middot; trailing " + Math.round(TRAIL_H * 60) + " min") +
+      "</span></div><div class=\"ibody\">" +
+      "<canvas width=\"256\" height=\"256\"></canvas>" +
+      "<div class=\"hint\">Click a track to identify it</div>" +
+      "<div class=\"istats\"></div></div>";
+    var cvs = inspEl.querySelector("canvas");
+    drawIntegrated(cvs);
+    paintStats();
+    cvs.addEventListener("click", function (ev) {
+      if (!INT) return;
+      var r = cvs.getBoundingClientRect();
+      var sx = Math.floor((ev.clientX - r.left) / r.width * 256);
+      var sy = 255 - Math.floor((ev.clientY - r.top) / r.height * 256);
+      var hit = -1, rad, dx, dy, xx, yy;
+      for (rad = 0; rad <= 4 && hit < 0; rad++) {
+        for (dx = -rad; dx <= rad && hit < 0; dx++) {
+          for (dy = -rad; dy <= rad; dy++) {
+            xx = sx + dx; yy = sy + dy;
+            if (xx < 0 || xx > 255 || yy < 0 || yy > 255) continue;
+            if (INT.idx[yy * 256 + xx] >= 0) { hit = INT.idx[yy * 256 + xx]; break; }
+          }
+        }
+      }
+      if (hit < 0) return;
+      PICK = (PICK === hit) ? -1 : hit;
+      drawIntegrated(cvs); paintStats();
+    });
+  }
+  inspEl.addEventListener("click", function (ev) {
+    if (ev.target && ev.target.id === "unsel") {
+      SELR = null; PICK = -1; drawTraces(); renderInspector(true);
+    }
+  });
+
+  /* brush on a time panel */
+  function timeAt(m, ev) {
+    var t = m.tr, r = t.cv.getBoundingClientRect(), sc = trScales();
+    var cx = (ev.clientX - r.left) * (t.w / r.width);
+    var x0 = PAD.l, x1 = t.w - PAD.r;
+    return Math.max(0, Math.min(sc.xmax, (cx - x0) / (x1 - x0) * sc.xmax));
+  }
+  MS.forEach(function (m) {
+    var cvs = m.tr.cv, dragging = false, anchor = 0;
+    cvs.addEventListener("pointerdown", function (ev) {
+      dragging = true; anchor = timeAt(m, ev);
+      if (cvs.setPointerCapture) cvs.setPointerCapture(ev.pointerId);
+      SELR = { key: m.key, t0: anchor, t1: anchor }; drawTraces();
+    });
+    cvs.addEventListener("pointermove", function (ev) {
+      if (!dragging) return;
+      var t = timeAt(m, ev);
+      SELR = { key: m.key, t0: Math.min(anchor, t), t1: Math.max(anchor, t) };
+      drawTraces();
+    });
+    cvs.addEventListener("pointerup", function (ev) {
+      if (!dragging) return;
+      dragging = false;
+      var t = timeAt(m, ev), a = Math.min(anchor, t), b = Math.max(anchor, t);
+      if (b - a < 0.01) { a = Math.max(0, a - 0.03); b = b + 0.03; }
+      SELR = { key: m.key, t0: a, t1: b }; PICK = -1;
+      drawTraces(); renderInspector(true);
+    });
+  });
+
+  /* ── controls ───────────────────────────────────────────────────────────── */
+  var mrow = document.getElementById("missions"), chips = [];
+  function mkChip(key, label, col) {
+    var b = document.createElement("button");
+    b.className = "chip";
+    b.style.setProperty("--m", col);
+    b.setAttribute("aria-pressed", key === null ? "true" : "false");
+    b.innerHTML = '<span class="sw"></span>' + label;
+    b.addEventListener("click", function () { select(key); });
+    mrow.appendChild(b); chips.push({ key: key, btn: b });
+  }
+  mkChip(null, "Both", "#E0A33B");
+  MS.forEach(function (m) { mkChip(m.key, m.short, m.color); });
+
+  function select(key) {
+    SEL = key;
+    chips.forEach(function (c) {
+      c.btn.setAttribute("aria-pressed", c.key === SEL ? "true" : "false");
+    });
+    MS.forEach(function (m) {
+      m.tr.wrap.hidden = !shown(m);
+      m.row.hidden = !shown(m);
+    });
+    if (SELR && SEL !== null && SELR.key !== SEL) { SELR = null; PICK = -1; }
+    recalcSpan();
+    sizeTraces(); drawStage(); readouts(); renderInspector(true);
+  }
+
+  var playBtn = document.getElementById("play"), scrub = document.getElementById("scrub"),
+      speedBtn = document.getElementById("speed"), loopBtn = document.getElementById("loop"),
+      quantBtn = document.getElementById("quant");
+  function setPlaying(v) {
+    playing = v;
+    playBtn.textContent = v ? "Pause" : "Play";
+    playBtn.setAttribute("aria-pressed", v ? "true" : "false");
+  }
+  playBtn.addEventListener("click", function () {
+    if (!playing && T >= TMAX) T = 0;
+    setPlaying(!playing);
+  });
+  scrub.addEventListener("input", function () {
+    T = scrub.value / 1000 * TMAX; setPlaying(false);
+    drawStage(); drawTraces(); readouts(); renderInspector();
+  });
+  speedBtn.addEventListener("click", function () {
+    si = (si + 1) % SPEEDS.length;
+    speedBtn.textContent = SPEEDS[si] + " min / s";
+  });
+  loopBtn.addEventListener("click", function () {
+    loopOn = !loopOn;
+    loopBtn.setAttribute("aria-pressed", loopOn ? "true" : "false");
+  });
+  quantBtn.addEventListener("click", function () {
+    QUANT = QUANT === "tid" ? "flux" : "tid";
+    quantBtn.textContent = QUANT === "tid" ? "Show flux" : "Show dose";
+    quantBtn.setAttribute("aria-pressed", QUANT === "flux" ? "true" : "false");
+    document.getElementById("stitle").textContent = QUANT === "tid"
+      ? "Dose rate through the atmosphere" : "Particle flux through the atmosphere";
+    drawStage(); shint();
+  });
+  document.addEventListener("keydown", function (ev) {
+    if (ev.target && /^(INPUT|TEXTAREA)$/.test(ev.target.tagName)) return;
+    if (ev.key === "0") select(null);
+    else if (ev.key >= "1" && ev.key <= String(MS.length)) select(MS[+ev.key - 1].key);
+    else if (ev.key === " ") { ev.preventDefault(); playBtn.click(); }
+    else if (ev.key === "Escape" && SELR) { SELR = null; PICK = -1; drawTraces(); renderInspector(true); }
+  });
+
+  function readouts() {
+    var hh = Math.floor(T), mm = Math.floor((T - hh) * 60);
+    document.getElementById("tclock").textContent =
+      (hh < 10 ? "0" : "") + hh + ":" + (mm < 10 ? "0" : "") + mm;
+    scrub.value = Math.round(T / TMAX * 1000);
+  }
+  function shint() {
+    var s = qspec(MS[0]);
+    document.getElementById("shint").textContent =
+      s.what + ", measured against altitude. Replay opens on the ground. Bins pool " +
+      "ascent and descent as published. The dotted line is each mission's published peak.";
+  }
+
+  var last = 0;
+  function frame(ts) {
+    if (!last) last = ts;
+    var dt = Math.min((ts - last) / 1000, 0.1); last = ts;
+    if (playing) {
+      T += dt * SPEEDS[si] / 60;
+      if (T >= TMAX) { T = loopOn ? 0 : TMAX; if (!loopOn) setPlaying(false); }
+      drawStage(); drawTraces(); readouts(); renderInspector();
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ── ledger, caveats, table ─────────────────────────────────────────────── */
+  var tb = document.querySelector("#ledger tbody");
+  MS.forEach(function (m) {
+    var tr = document.createElement("tr");
+    var t = m.tgt;
+    tr.innerHTML =
+      '<td><span class="dot" style="background:' + m.color + '"></span>' + m.short + '</td>' +
+      '<td>' + m.flown + '</td><td style="text-align:left">' + m.site + '</td>' +
+      '<td>' + m.thl.toFixed(1) + ' keV</td>' +
+      '<td>' + m.ascent.apogee_km.toFixed(2) + ' km</td>' +
+      '<td>' + (t.flux_peak != null ? t.flux_peak.toFixed(2) + ' s⁻¹' : '—') + '</td>' +
+      '<td>' + (t.flux_peak_alt != null ? t.flux_peak_alt.toFixed(1) + ' km' : '—') + '</td>' +
+      '<td style="color:var(--amber-ink)">' +
+      (t.tid_peak_alt != null ? t.tid_peak_alt.toFixed(1) + ' km' : '—') + '</td>';
+    m.row = tr;
+    tb.appendChild(tr);
+  });
+
+  document.getElementById("caveats").innerHTML =
+    "Measured: absorbed dose in 500 µm Si · model: PARMA folded into silicon at the " +
+    "Oulu-derived W (112.0 / 108.6), the same quantity as the measurement — median " +
+    "measured/PARMA 0.99 / 0.95 above 10 km · PARMA's own W tables stop in 2023 and the " +
+    "date-driven path falls back to W = 0, which reads +37 % high; that curve is " +
+    "superseded and is not plotted · " +
+    "CARI-7A is shown as a phantom-dose second opinion and is NOT the same quantity · " +
+    "5 min of ground is kept before launch as a baseline and the rest of the pad time " +
+    "discarded — 42 min for OURANOS, 29 % of its record; launch is marked on each " +
+    "panel · the published altitude bins still pool ascent " +
+    "and descent, and are used as published rather than re-derived · " +
+    "the peak count rate is a WHOLE-SENSOR rate in s⁻¹ over 1.98 cm², not a per-cm² " +
+    "flux — Sim/missions.py still names that key flux_peak_s1cm2 · " +
+    "the panels plot dose rate binned to 20 s from the same masked clusters, " +
+    "smoothed over 5 bins for the line with the raw bins behind it — not a hit " +
+    "count, which weights a soft photon the same as an alpha · " +
+    "masking is the BALLOON rule, noisy pixels only: recomputing the published " +
+    "profile from these clusters returns 0.99 / 1.00 of it that way, and 0.82 / 1.00 " +
+    "if the airliner's hot-pixel cut is added, so ASTRABAX's hot_pixels.txt is " +
+    "deliberately not applied · " +
+    "no lat/lon was logged, so there is no " +
+    "ground track · ASTRABAX carries a cached hot-pixel mask, OURANOS only a noisy-pixel " +
+    "mask, so their artefact rejection is not identical · hits s⁻¹ is one 1 s frame " +
+    "sampled every 5 s, smoothed over 9 samples for the line, raw behind it.";
+
+  var dump = document.querySelector("#dump tbody"), rows = [];
+  MS.forEach(function (m) {
+    var tid = m.profile.tid, pm = m.profile.parma;
+    if (!tid) return;
+    tid.alt.forEach(function (al, i) {
+      var mv = pm ? interp(pm.alt, pm.v, al) : null;
+      rows.push('<tr><td><span class="dot" style="background:' + m.color + '"></span>' +
+        m.short + '</td><td>' + al.toFixed(2) + '</td><td>' + tid.v[i].toFixed(4) +
+        '</td><td>' + (tid.e ? tid.e[i].toFixed(4) : '—') + '</td><td>' +
+        (mv == null ? '—' : mv.toFixed(4)) + '</td><td>' +
+        (mv ? (tid.v[i] / mv).toFixed(2) : '—') + '</td></tr>');
+    });
+  });
+  dump.innerHTML = rows.join("");
+
+  function resize() {
+    var r = pc.getBoundingClientRect(), dpr = Math.min(window.devicePixelRatio || 1, 2);
+    PW = Math.round(r.width); PH = Math.round(r.height);
+    pc.width = PW * dpr; pc.height = PH * dpr;
+    pg.setTransform(dpr, 0, 0, dpr, 0, 0);
+    drawStage();
+    sizeTraces();
+  }
+  window.addEventListener("resize", resize);
+  recalcSpan();
+  resize();
+  readouts();
+  shint();
+  renderInspector(true);
+  if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    T = TMAX; setPlaying(false); drawStage(); drawTraces(); readouts();
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>

@@ -5,3 +5,12 @@
 # A cleared cue belongs in 3d/assets/ as a short encode; see SCORE_FILE in
 # 3d/assets/film.js.
 3d/music/
+
+# Renders of the film, and the packages tools/render-film.mjs needs to make one.
+# Same reasoning as above: the site is published from git, so a committed render
+# is a published one — a ~150 MB 4K master would be served to every visitor who
+# guessed the path, and could not be taken back out of history afterwards. The
+# film itself ships as /3d/film.html; a rendered file is for sending to people.
+3d/out/
+3d/tools/node_modules/
+3d/tools/package-lock.json

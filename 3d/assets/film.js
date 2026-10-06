@@ -60,6 +60,11 @@ const ui = {
   playpause: $('playpause'), posterBtn: $('poster-play'), sound: $('sound'),
 }
 
+// ?render=1 — offline frame-by-frame capture, driven from tools/render-film.mjs.
+// Read before the renderer is built because it changes how the drawing buffer is
+// kept; everything else it changes is set up in setupRender() at the end of boot.
+const RENDER = new URLSearchParams(location.search).has('render')
+
 // ---------------------------------------------------------------- score
 const score = createScore({
   file: new URLSearchParams(location.search).get('score') || SCORE_FILE,
@@ -92,7 +97,13 @@ function syncSound() {
 
 // ---------------------------------------------------------------- renderer
 const canvas = $('canvas')
-const renderer = new WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' })
+// preserveDrawingBuffer costs a copy per frame and is off for visitors. The
+// offline capture needs it: a screenshot re-composites the page, and without it
+// an un-preserved WebGL buffer is cleared after the frame it was drawn in, so a
+// capture that lands a beat late reads the canvas as black.
+const renderer = new WebGLRenderer({
+  canvas, antialias: true, powerPreference: 'high-performance', preserveDrawingBuffer: RENDER,
+})
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 renderer.setSize(window.innerWidth, window.innerHeight)
 renderer.toneMapping = 4              // ACESFilmic
@@ -956,6 +967,91 @@ window.addEventListener('resize', () => {
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 })
 
+// ---------------------------------------------------------------- offline render
+// ?render=1 hands the film's clock to tools/render-film.mjs, which asks for one
+// frame at a time and screenshots each at 3840x2160.
+//
+// The film is REAL TIME, and a 4K screenshot takes the better part of a second to
+// come back — so between two captured frames the wall clock runs about fifty
+// times further than film time. Nothing the wall clock drives may be left to it:
+//
+//   * the rAF loop never starts (stillMode), and film time is i/fps exactly;
+//   * dt is the fixed 1/fps rather than the measured gap, so the detector fade
+//     and the data playheads integrate the same way a 60fps viewer sees;
+//   * the CSS transitions that carry the captions and the leader labels are the
+//     one piece of the picture the GSAP timeline does not own. Left alone, each
+//     0.9s fade would be long finished by the time the next frame was captured
+//     and the film would read as hard cuts, so they are paused and seeked by
+//     hand against the same clock.
+//
+// The score is not touched at all: createScore() does nothing until enable() is
+// called, and the track is laid under the picture by ffmpeg afterwards.
+const animAt = new WeakMap()      // Animation -> film ms at which it first appeared
+function seekTransitions(nowMs) {
+  // getAnimations() only reports transitions the style engine has already
+  // created, and syncFilmState() has just toggled the classes that create them.
+  void document.body.offsetHeight
+  for (const a of document.getAnimations()) {
+    if (!animAt.has(a)) animAt.set(a, nowMs)
+    const local = nowMs - animAt.get(a)
+    const end = a.effect ? a.effect.getComputedTiming().endTime : 0
+    try {
+      if (end && local >= end) {
+        // Let it retire the way it would in playback: a finished transition is
+        // dropped and the element simply keeps its new computed style. Holding
+        // it paused past its end instead leaves a stale effect applying values
+        // that the next class change then has to fight.
+        a.finish()
+      } else {
+        a.pause()
+        a.currentTime = Math.max(0, local)
+      }
+    } catch (e) { /* an animation can retire between the list and the write */ }
+  }
+}
+
+function renderFrame(i, fps) {
+  const dt = 1 / fps
+  master.time(i * dt)            // renders the timeline and fires the beats it crosses
+  syncFilmState()
+  if (D) {
+    screens.forEach(s => s.advance(dt))
+    if (hero.progress > 0 && hero.shown < heroOrdered.length) drawHeroProgress()
+    screens.forEach(s => s.upload())
+  }
+  applyCamera()
+  positionLabels()
+  seekTransitions(i * dt * 1000)
+  renderer.render(scene, camera)
+}
+
+function setupRender() {
+  const style = document.createElement('style')
+  style.textContent = '#loader,#transport,#poster-play,#hint{display:none!important}'
+  document.head.appendChild(style)
+
+  play()                         // the same reset a viewer's Replay performs …
+  master.pause()                 // … then the clock comes back here
+  master.time(0)
+  renderFrame(0, 60)
+
+  window.__film = {
+    duration: master.duration(),
+    frame(i, fps) {
+      renderFrame(i, fps)
+      // Give the compositor a frame to pick the canvas up in. preserveDrawingBuffer
+      // makes the capture safe either way; this keeps the DOM overlay in step.
+      return new Promise(res => {
+        const done = () => res(i)
+        requestAnimationFrame(() => requestAnimationFrame(done))
+        setTimeout(done, 250)    // headless can throttle rAF; never hang on it
+      })
+    },
+  }
+  console.log('FILM render mode: duration ' + master.duration().toFixed(2) + 's, ' +
+    window.innerWidth + 'x' + window.innerHeight + ' css @ dpr ' + window.devicePixelRatio)
+}
+
 // ---------------------------------------------------------------- boot
 ;(async function boot() {
   applyLights()
@@ -971,13 +1067,16 @@ window.addEventListener('resize', () => {
     applyCamera()
     renderer.render(scene, camera)                 // compile shaders before the reveal
     last = performance.now()
+    if (RENDER) stillMode = true                   // one tick, then the harness drives
     tick(last)
     ui.loader.classList.add('gone')
 
     const params = new URLSearchParams(location.search)
     const seek = params.get('t')
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    if (seek !== null) {
+    if (RENDER) {
+      setupRender()
+    } else if (seek !== null) {
       // ?t=12.5 freezes the film at that second, for reviewing shots
       master.pause()
       master.time(parseFloat(seek) || 0)
@@ -1012,6 +1111,7 @@ window.addEventListener('resize', () => {
   } catch (err) {
     ui.pct.textContent = '—'
     ui.loader.querySelector('.status').textContent = 'Could not load: ' + err.message
+    window.__filmError = err.message        // the offline harness waits on one or the other
     console.error(err)
   }
 })()
